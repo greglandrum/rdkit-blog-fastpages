@@ -1,0 +1,72 @@
+{
+  
+    
+        "post0": {
+            "title": "An Example Markdown Post",
+            "content": "Example Markdown Post . Basic setup . Jekyll requires blog post files to be named according to the following format: . YEAR-MONTH-DAY-filename.md . Where YEAR is a four-digit number, MONTH and DAY are both two-digit numbers, and filename is whatever file name you choose, to remind yourself what this post is about. .md is the file extension for markdown files. . The first line of the file should start with a single hash character, then a space, then your title. This is how you create a “level 1 heading” in markdown. Then you can create level 2, 3, etc headings as you wish but repeating the hash character, such as you see in the line ## File names above. . Basic formatting . You can use italics, bold, code font text, and create links. Here’s a footnote 1. Here’s a horizontal rule: . . Lists . Here’s a list: . item 1 | item 2 | . And a numbered list: . item 1 | item 2 | Boxes and stuff . This is a quotation . . You can include alert boxes …and… . . You can include info boxes Images . . Code . You can format text and code per usual . General preformatted text: . # Do a thing do_thing() . Python code and output: . # Prints &#39;2&#39; print(1+1) . 2 . Formatting text as shell commands: . echo &quot;hello world&quot; ./some_script.sh --option &quot;value&quot; wget https://example.com/cat_photo1.png . Formatting text as YAML: . key: value - another_key: &quot;another value&quot; . Tables . Column 1 Column 2 . A thing | Another thing | . Tweetcards . Altair 4.0 is released! https://t.co/PCyrIOTcvvTry it with: pip install -U altairThe full list of changes is at https://t.co/roXmzcsT58 ...read on for some highlights. pic.twitter.com/vWJ0ZveKbZ . &mdash; Jake VanderPlas (@jakevdp) December 11, 2019 Footnotes . This is the footnote. &#8617; . |",
+            "url": "https://greglandrum.github.io/rdkit-blog/markdown/2020/01/14/test-markdown-post.html",
+            "relUrl": "/markdown/2020/01/14/test-markdown-post.html",
+            "date": " • Jan 14, 2020"
+        }
+        
+    
+  
+    
+        ,"post1": {
+            "title": "Similarity maps with the new drawing code",
+            "content": "As part of the 2019.09 release we added a C++ implementation of the RDKit&#39;s similarity map functionality (https://jcheminf.biomedcentral.com/articles/10.1186/1758-2946-5-43). I forgot to mention this during the &quot;What&#39;s New&quot; bit of my presentation at the UGM, but I think it&#39;s worth calling attention to. So here&#39;s a quick blog post. . from rdkit import Chem from rdkit.Chem import Draw from rdkit.Chem.Draw import SimilarityMaps from IPython.display import SVG import io from PIL import Image import numpy as np import rdkit print(rdkit.__version__) . RDKit WARNING: [11:53:45] Enabling RDKit 2019.09.2 jupyter extensions . 2019.09.2 . I start by using &quot;classic&quot; similarity map functionality to show why atorvastatin (Lipitor) and rosuvastatin (Crestor) are similar to each other when using the Morgan fingerprint. . Here are the two molecules: . atorvastatin = Chem.MolFromSmiles(&#39;O=C(O)C[C@H](O)C[C@H](O)CCn2c(c(c(c2c1ccc(F)cc1)c3ccccc3)C(=O)Nc4ccccc4)C(C)C&#39;) rosuvastatin = Chem.MolFromSmiles(&#39;OC(=O)C[C@H](O)C[C@H](O) C=C c1c(C(C)C)nc(N(C)S(=O)(=O)C)nc1c2ccc(F)cc2&#39;) Draw.MolsToGridImage((atorvastatin,rosuvastatin)) . To use the new drawing code, we create a Draw2D object and pass that to SimilarityMaps.GetSimilarityMapForFingerprint: . def show_png(data): bio = io.BytesIO(data) img = Image.open(bio) return img . d = Draw.MolDraw2DCairo(400, 400) _, maxWeight = SimilarityMaps.GetSimilarityMapForFingerprint(atorvastatin, rosuvastatin, lambda m, i: SimilarityMaps.GetMorganFingerprint(m, i, radius=2, fpType=&#39;bv&#39;), draw2d=d) d.FinishDrawing() show_png(d.GetDrawingText()) . We can do the same thing with count-based fingerprints: . d = Draw.MolDraw2DCairo(400, 400) _, maxWeight = SimilarityMaps.GetSimilarityMapForFingerprint(atorvastatin, rosuvastatin, lambda m, i: SimilarityMaps.GetMorganFingerprint(m, i, radius=2, fpType=&#39;count&#39;), draw2d=d) d.FinishDrawing() show_png(d.GetDrawingText()) . The other GetSimilarityMapFrom... functions also accept the optional draw2d argument. Here&#39;s a visualization of the contributions made by the atoms in atorvastatin to its calculatied logp value: . from rdkit.Chem import rdMolDescriptors ator_contribs = rdMolDescriptors._CalcCrippenContribs(atorvastatin) d = Draw.MolDraw2DCairo(400, 400) SimilarityMaps.GetSimilarityMapFromWeights(atorvastatin,[x[0] for x in ator_contribs],draw2d=d) d.FinishDrawing() show_png(d.GetDrawingText()) . And a couple more visualizations of various partial charge schemes. . Starting with Gasteiger-Marsilli charges: . from rdkit.Chem import rdPartialCharges rdPartialCharges.ComputeGasteigerCharges(atorvastatin) chgs = [x.GetDoubleProp(&quot;_GasteigerCharge&quot;) for x in atorvastatin.GetAtoms()] d = Draw.MolDraw2DCairo(400, 400) SimilarityMaps.GetSimilarityMapFromWeights(atorvastatin,chgs,draw2d=d) d.FinishDrawing() show_png(d.GetDrawingText()) . And also the partial charges calculated with extended Hueckel theory (eHT) using Mulliken analysis: . from rdkit.Chem import rdEHTTools from rdkit.Chem import rdDistGeom mh = Chem.AddHs(atorvastatin) rdDistGeom.EmbedMolecule(mh) _,res = rdEHTTools.RunMol(mh) static_chgs = res.GetAtomicCharges()[:atorvastatin.GetNumAtoms()] d = Draw.MolDraw2DCairo(400, 400) SimilarityMaps.GetSimilarityMapFromWeights(atorvastatin,list(static_chgs),draw2d=d) d.FinishDrawing() show_png(d.GetDrawingText()) . As one final demo, I&#39;ll use the method to visualize the variability of the eHT charges with conformation for atorvastatin. . Start by generating 10 diverse conformers, calculating the charges for each, and plotting the average: . mh = Chem.AddHs(atorvastatin) ps = rdDistGeom.ETKDGv2() ps.pruneRmsThresh = 0.5 ps.randomSeed = 0xf00d rdDistGeom.EmbedMultipleConfs(mh,10,ps) print(f&#39;Found {mh.GetNumConformers()} conformers&#39;) chgs = [] for conf in mh.GetConformers(): _,res = rdEHTTools.RunMol(mh,confId=conf.GetId()) chgs.append(res.GetAtomicCharges()[:atorvastatin.GetNumAtoms()]) chgs = np.array(chgs) mean_chgs = np.mean(chgs,axis=0) std_chgs = np.std(chgs,axis=0) d = Draw.MolDraw2DCairo(400, 400) SimilarityMaps.GetSimilarityMapFromWeights(atorvastatin,list(mean_chgs),draw2d=d) d.FinishDrawing() show_png(d.GetDrawingText()) . Found 10 conformers . That doesn&#39;t look hugely different from what we saw above. . To show the variability, plot the standard deviation of the charges across the 10 conformers: . print(std_chgs) print(max(std_chgs),min(std_chgs)) d = Draw.MolDraw2DCairo(400, 400) SimilarityMaps.GetSimilarityMapFromWeights(atorvastatin,list(std_chgs),draw2d=d) d.FinishDrawing() show_png(d.GetDrawingText()) . [0.01292592 0.00743163 0.01971312 0.01433223 0.01063085 0.01283745 0.01219511 0.00748435 0.01234194 0.01492494 0.00640842 0.02264999 0.02481744 0.00987842 0.00843151 0.01289956 0.00560632 0.00498617 0.00604883 0.005569 0.00452067 0.00796675 0.00718033 0.00581337 0.00702613 0.00634237 0.00699789 0.00539868 0.00521868 0.02412709 0.03131741 0.03709349 0.00657276 0.01175903 0.00674661 0.01012909 0.0050995 0.01139418 0.00831795 0.00581207 0.00960073] 0.03709348867462464 0.00452067345998171 . The deviations aren&#39;t huge (the printed array shows that), but the largest value is clearly the amide N. . There&#39;s definitely a ToDo here to improve the way the negative contours are drawn so that the fact that they are being drawn with dashed lines is visible. .",
+            "url": "https://greglandrum.github.io/rdkit-blog/tutorial/2020/01/03/similarity-maps-with-new-drawing-code.html",
+            "relUrl": "/tutorial/2020/01/03/similarity-maps-with-new-drawing-code.html",
+            "date": " • Jan 3, 2020"
+        }
+        
+    
+  
+
+  
+  
+
+  
+      ,"page1": {
+          "title": "About Me",
+          "content": "This website is powered by fastpages 1. . a blogging platform that natively supports Jupyter notebooks in addition to other formats. &#8617; . |",
+          "url": "https://greglandrum.github.io/rdkit-blog/about/",
+          "relUrl": "/about/",
+          "date": ""
+      }
+      
+  
+
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+      ,"page10": {
+          "title": "",
+          "content": "Sitemap: {{ “sitemap.xml” | absolute_url }} | .",
+          "url": "https://greglandrum.github.io/rdkit-blog/robots.txt",
+          "relUrl": "/robots.txt",
+          "date": ""
+      }
+      
+  
+
+}
