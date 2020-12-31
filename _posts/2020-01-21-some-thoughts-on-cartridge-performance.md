@@ -2,7 +2,7 @@
 toc: true
 layout: post
 description: Data, hints, and even a bit of ranting
-categories: [markdown]
+categories: [cartridge]
 title: Some thoughts on the performance of the RDKit cartridge
 ---
 
