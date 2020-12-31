@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Some thoughts on the performance of the RDKit cartridge | RDKit blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Some thoughts on the performance of the RDKit cartridge" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Data, hints, and even a bit of ranting" />
+<meta property="og:description" content="Data, hints, and even a bit of ranting" />
+<link rel="canonical" href="https://greglandrum.github.io/rdkit-blog/markdown/2020/01/21/some-thoughts-on-cartridge-performance.html" />
+<meta property="og:url" content="https://greglandrum.github.io/rdkit-blog/markdown/2020/01/21/some-thoughts-on-cartridge-performance.html" />
+<meta property="og:site_name" content="RDKit blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-01-21T00:00:00-06:00" />
+<script type="application/ld+json">
+{"url":"https://greglandrum.github.io/rdkit-blog/markdown/2020/01/21/some-thoughts-on-cartridge-performance.html","@type":"BlogPosting","headline":"Some thoughts on the performance of the RDKit cartridge","dateModified":"2020-01-21T00:00:00-06:00","datePublished":"2020-01-21T00:00:00-06:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://greglandrum.github.io/rdkit-blog/markdown/2020/01/21/some-thoughts-on-cartridge-performance.html"},"description":"Data, hints, and even a bit of ranting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/rdkit-blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://greglandrum.github.io/rdkit-blog/feed.xml" title="RDKit blog" /><!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-113661686-1','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+
+<link rel="shortcut icon" type="image/x-icon" href="/rdkit-blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/rdkit-blog/">RDKit blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/rdkit-blog/about/">About Me</a><a class="page-link" href="/rdkit-blog/search/">Search</a><a class="page-link" href="/rdkit-blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Some thoughts on the performance of the RDKit cartridge</h1><p class="page-description">Data, hints, and even a bit of ranting</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-01-21T00:00:00-06:00" itemprop="datePublished">
+        Jan 21, 2020
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      11 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/rdkit-blog/categories/#markdown">markdown</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h1"><a href="#some-background-and-disclaimers">Some background and disclaimers</a></li>
+<li class="toc-entry toc-h1"><a href="#creating-the-database">Creating the database</a></li>
+<li class="toc-entry toc-h1"><a href="#substructure-queries">Substructure queries</a></li>
+<li class="toc-entry toc-h1"><a href="#similarity-queries">Similarity queries</a></li>
+<li class="toc-entry toc-h1"><a href="#some-technical-details">Some technical details:</a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#sizes-of-the-tables-and-indices">Sizes of the tables and indices</a></li>
+<li class="toc-entry toc-h2"><a href="#performance-of-the-substructure-indices">Performance of the substructure indices</a></li>
+<li class="toc-entry toc-h2"><a href="#warming-up-the-disk-cache">Warming up the disk cache</a></li>
+<li class="toc-entry toc-h2"><a href="#doing-the-queries-and-making-the-images">Doing the queries and making the images</a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h1"><a href="#mini-rant">Mini-rant</a></li>
+</ul><blockquote>
+  <p><strong>EDITED on 23.01.2020</strong> John Mayfield pointed out that the way I had constructed the set of 10 million molecules wasn’t reproducible. This update fixes that, but it also changes the results.</p>
+</blockquote>
+
+<p>It’s been a while since I did a post about the cartridge! This one is a little bit ranty, but hopefully it’s still useful.</p>
+
+<h1 id="some-background-and-disclaimers">
+<a class="anchor" href="#some-background-and-disclaimers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Some background and disclaimers</h1>
+
+<p>I normally do performance testing on the cartridge using ChEMBL, but since
+that’s “only” around 1.7 million compounds I wanted to try something a bit
+bigger. But how big? I don’t see the point in shoving 100 million compounds (or
+a billion) into PostgreSQL (there’s a mini-rant explaining this at the bottom of
+the post), so I went with 10 million. That’s more than five times bigger than
+ChEMBL, but it’s still not unimaginable that you’d actually have a relational
+schema with a molecule table this size that has data about most of those
+molecules in separate tables (again, see the mini-rant).</p>
+
+<p>My goal here is to get a sense for what kind of performance you can expect for
+doing “normal” chemical queries using a local PostgreSQL instance without having
+to spend time optimizing the database or hardware configuration. I generated all
+the numbers below on my Linux desktop - which is 4-5 years old at this point -
+using an out-of-the-box install of PostgreSQL 12 (the only configuration tuning
+was to increase the size of shared_buffers to 4096M and work_mem as described in
+the <a href="https://www.rdkit.org/docs/Cartridge.html">RDKit docs</a>). I was also using
+the machine for other things (like reading email or writing this post in Chrome)
+while these queries ran, so the numbers are really just ballpark estimates.</p>
+
+<p>So which molecules to use? Rather than agonizing overly much about this, I just
+grabbed a <a href="ftp://ftp.ncbi.nlm.nih.gov/pubchem/Compound/Weekly/2020-01-05/Extras/">PubChem Compound SMILES
+dump</a> and
+took the first 10 million molecules from that.</p>
+
+<p>I hedged above by saying “normal” chemical queries. I have a longer rant about
+that topic that I will spare you the details of, but I generally think that
+including worst-case queries (i.e. things that return tens or hundreds of
+thousands of rows) in real-world benchmarking examples is pointless. It’s
+definitely useful to understand the worst-case performance of a system, but
+that’s not what I’m doing here. So my queries will often limit the number of
+rows returned to what I think is a “reasonable” number for interactive usage.</p>
+
+<h1 id="creating-the-database">
+<a class="anchor" href="#creating-the-database" aria-hidden="true"><span class="octicon octicon-link"></span></a>Creating the database</h1>
+
+<p>This tends to be time consuming, particularly creating the molecule index.
+Start by creating the database from the command line and loading all of the raw data:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>glandrum@otter:/tmp/pubchem_load$ createdb pubchem_compound 
+glandrum@otter:/tmp/pubchem_load$ psql -c 'create extension rdkit' pubchem_compound 
+CREATE EXTENSION 
+glandrum@otter:/tmp/pubchem_load$ psql -c 'create table raw_data (id SERIAL,cid integer, smiles text)' pubchem_compound  
+CREATE TABLE 
+glandrum@otter:/tmp/pubchem_load$ zcat CID-SMILES.gz | sed 's/\\/\\\\/g' | psql -c "copy raw_data (cid,smiles) from stdin with delimiter E'\t'" pubchem_compound  
+COPY 102397130 
+</code></pre></div></div>
+
+<p>Now create the molecule table and build the index:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# alter table raw_data add primary key (cid); 
+ALTER TABLE 
+pubchem_compound=# \timing 
+Timing is on. 
+pubchem_compound=# select * into mols from (select cid,mol_from_smiles(smiles::cstring) m from raw_data order by cid limit 10000000) tmp where m is not null; 
+... lots of info about failing molecules deleted here
+WARNING:  could not create molecule from SMILES '[B+]12(CC3CC(C1)CC(C2)C3)NCC[O-]'
+WARNING:  could not create molecule from SMILES '[B+]12(CC3CC(C1)CC(C2)C3)NCCO'
+SELECT 9999165
+Time: 1722464.775 ms (28:42.465)
+pubchem_compound=# create index molidx on mols using gist(m);
+CREATE INDEX
+Time: 3735718.147 ms (01:02:15.718)
+</code></pre></div></div>
+
+<p>Add fingerprints and their index along with the primary keys we’ll use to link things:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# create index fps_mfp2_idx on fps using gist(mfp2);
+CREATE INDEX
+Time: 155112.279 ms (02:35.112)
+pubchem_compound=# alter table mols add primary key (cid); 
+ALTER TABLE
+Time: 44271.680 ms (00:44.272)
+pubchem_compound=# alter table fps add primary key (cid);
+ALTER TABLE
+Time: 27675.441 ms (00:27.675)
+</code></pre></div></div>
+<p>Now let’s do some queries.</p>
+
+<h1 id="substructure-queries">
+<a class="anchor" href="#substructure-queries" aria-hidden="true"><span class="octicon octicon-link"></span></a>Substructure queries</h1>
+
+<p>Note that all of the results below are done with a “warm” disk cache: I ran a substructure search and similarity search to try and ensure that at least parts of the indices are being cached by the operating system.</p>
+
+<p>Picking the queries for a demo is always tricky, and can obviously completely slant the results one way or another, so I went to the ASAP page for J Med Chem and pulled stuff from there.</p>
+
+<p>Let’s start with a query for parts of the “head” and “gate” from this paper: https://pubs.acs.org/doi/10.1021/acs.jmedchem.9b01912</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# select * from mols where m@&gt;'CC1=C(C=C(C=C1)C(N)=O)C#CC1=CN=CC=C1' limit 10;
+   cid    |                                    m                                    
+----------+-------------------------------------------------------------------------
+ 11526637 | Cc1ccc(C(=O)Nc2cc(OC[C@@H]3CCCN3C)cc(C(F)(F)F)c2)cc1C#Cc1cnc2nc[nH]c2c1
+(1 row)
+
+ Time: 5359.046 ms (00:05.359)
+</code></pre></div></div>
+
+<p>Here’s the one hit:</p>
+
+<p><img src="images/cartridge-thoughts-img1.png" alt=""></p>
+
+<p>Now the core from: https://pubs.acs.org/doi/10.1021/acs.jmedchem.9b01427</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# select * from mols where m@&gt;'CC1=CC2=C(S1)C(=O)NC(C)=N2' limit 10;   cid    |                         m                         
+----------+---------------------------------------------------
+  3758971 | CCOC(=O)C1CCCn2c1nc1cc(-c3ccccc3)sc1c2=O
+ 10622152 | COc1ccc(NC(=S)Nn2c(C)nc3cc(-c4ccccc4)sc3c2=O)cc1
+  1040399 | COC(=O)[C@@H]1CCc2nc3cc(-c4ccc(OC)cc4)sc3c(=O)n21
+  1040400 | COC(=O)[C@H]1CCc2nc3cc(-c4ccc(OC)cc4)sc3c(=O)n21
+  3310123 | O=c1c2sc(-c3ccccc3)cc2nc2n1CCCCC2
+  4376566 | CCOC(=O)C1CCCn2c1nc1cc(-c3ccc(OC)cc3)sc1c2=O
+ 10574247 | COc1ccccc1NC(=S)Nn1c(C)nc2cc(-c3ccccc3)sc2c1=O
+ 11404362 | Cc1cc2nc(-c3ccccc3)n(-c3ccccc3)c(=O)c2s1
+ 10716322 | Cc1cccc(NC(=S)Nn2c(C)nc3cc(-c4ccccc4)sc3c2=O)c1
+   661611 | COc1ccc(-c2cc3nc4n(c(=O)c3s2)CCOC4)cc1
+(10 rows)
+
+Time: 6.532 ms
+</code></pre></div></div>
+
+<p>And the results:</p>
+
+<p><img src="images/cartridge-thoughts-img2.png" alt=""></p>
+
+<p>And, finally, the core from: https://pubs.acs.org/doi/10.1021/acs.jmedchem.9b01684</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# select * from mols where m@&gt;'CN1C(=O)N(C)C2=C1C=NC(N)=N2' limit 10;
+   cid    |                                        m                                        
+----------+---------------------------------------------------------------------------------
+ 10359733 | C=CCn1c(=O)n(CCCCCCCC)c2nc(N)nc(Cl)c21
+ 10452174 | Nc1nc2c(c(=O)n1N)n(CCCl)c(=O)n2[C@@H]1O[C@H](CO)[C@@H](O)[C@H]1O
+ 10048317 | Nc1nc2c(c(=O)n1N)n(C/C=C/c1ccccc1)c(=O)n2[C@@H]1O[C@H](CO)[C@@H](O)[C@H]1O
+ 10454396 | [N-]=[N+]=NCC(O)Cn1c(=O)n([C@@H]2O[C@H](CO)[C@@H](O)[C@H]2O)c2nc(N)n(N)c(=O)c21
+ 10476329 | Nc1nc2c(c(=O)n1N)n(Cc1ccccc1)c(=O)n2[C@@H]1O[C@H](CO)[C@@H](O)[C@H]1O
+ 11428584 | C=CCn1c(=O)n([C@@H]2O[C@H](CO)[C@@H](O)[C@H]2O)c2nc(N)nc(OCC)c21
+ 11453816 | C=CCn1c(=O)n([C@@H]2O[C@H](CO)[C@@H](O)[C@H]2O)c2nc(N)nc(OCN(C)C(=O)OCC)c21
+  9980347 | COc1ccc(Cn2c(=O)n([C@@H]3O[C@H](CO)[C@@H](O)[C@H]3O)c3nc(N)n(N)c(=O)c32)cc1
+ 10085856 | Cn1c(=O)n2c3c1c(=O)nc(N)n3C[C@H]1O[C@@H]2[C@H](O)[C@@H]1O
+  9994808 | C=CCn1c(=O)n(CCCCO)c2nc(N)nc(Cl)c21
+(10 rows)
+
+Time: 107.934 ms
+</code></pre></div></div>
+
+<p>And the first results:</p>
+
+<p><img src="images/cartridge-thoughts-img3.png" alt=""></p>
+
+<p>These queries are, in general, pretty quick. I’m certainly likely to spend more
+time looking at the results than I am waiting for them to come back.</p>
+
+<p>One point it’s worth making is that queries that don’t return any results tend
+to be pretty fast. Here’s an example of that:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# select * from mols where m@&gt;'O1C=NC2=C1N=C1N=CN=CC1=N2' limit 5;
+ cid | m 
+-----+---
+(0 rows)
+
+Time: 9.778 ms
+</code></pre></div></div>
+
+<p>Note that this is definitely not always true… the index does not work
+particularly well for queries that have massively repeating common
+substructures:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# select * from mols where m@&gt;'COCOCOCOCOCOCOCOCOCOCOCOCOCOCOCOCOCOCCOCOCOCOCOCCO' limit 5;
+ cid | m 
+-----+---
+(0 rows)
+
+Time: 150521.647 ms (02:30.522)
+</code></pre></div></div>
+
+<p>Remember what I said about about worst-case performance? There ya go.</p>
+
+<h1 id="similarity-queries">
+<a class="anchor" href="#similarity-queries" aria-hidden="true"><span class="octicon octicon-link"></span></a>Similarity queries</h1>
+
+<p>Now let’s do some similarity searches using the molecule drawn in the graphical
+abstract as queries. For this blog post I’m going to use the cartridge’s
+“neighbor” operator &lt;%&gt; to order the results and allow the N closest neighbors
+of each query molecule to be retrieved. Here’s the simple SQL function that I
+use for doing that:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# pubchem_compound=# create or replace function get_mfp2_neighbors2(smiles text) 
+returns table(cid integer, m mol, similarity double precision) as 
+$$ 
+select cid,m,tanimoto_sml(morganbv_fp(mol_from_smiles($1::cstring)),mfp2) as similarity 
+from fps join mols using (cid) 
+order by morganbv_fp(mol_from_smiles($1::cstring))&lt;%&gt;mfp2; 
+$$ language sql stable ;  
+</code></pre></div></div>
+
+<p>That’s adapted from the function get_mfp2_neighbors that is in the <a href="https://www.rdkit.org/docs/Cartridge.html">RDKit
+cartridge documentation</a>.</p>
+
+<p>Let’s start with a query for the five nearest neighbors of balovaptan
+(https://pubs.acs.org/doi/10.1021/acs.jmedchem.9b01478):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# select * from get_mfp2_neighbors2('CN1CC2=NN=C(C3CCC(CC3)OC3=CC=CC=N3)N2C2=CC=C(Cl)C=C2C1') limit 5;
+   cid    |                              m                              |     similarity     
+----------+-------------------------------------------------------------+--------------------
+ 11237434 | CN1Cc2cc(Cl)ccc2-n2c(nnc2C2CCN(c3ccccn3)CC2)C1              | 0.7049180327868853
+ 11237433 | CN1Cc2cc(Cl)ccc2-n2c(nnc2C2CCN(c3ccccn3)CC2)C1.Cl.Cl.Cl     | 0.6935483870967742
+ 10070061 | CN1CCc2cc(Cl)ccc2-n2c(nnc2C2CCN(c3ccccn3)CC2)C1             | 0.6212121212121212
+ 11270862 | Cc1ccccc1CC(=O)N1CCC(c2nnc3n2-c2ccc(Cl)cc2CN(C)C3)CC1       | 0.5797101449275363
+ 11442570 | CN1Cc2cc(Cl)ccc2-n2c(nnc2C2CCN(C(=O)c3c[nH]c4ccccc34)CC2)C1 | 0.5774647887323944
+(5 rows)
+
+Time: 239.879 ms
+</code></pre></div></div>
+
+<p>It’s easy (and quick) to expand that to the ten nearest neighbors:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# select * from get_mfp2_neighbors2('CN1CC2=NN=C(C3CCC(CC3)OC3=CC=CC=N3)N2C2=CC=C(Cl)C=C2C1') limit 10;
+   cid    |                              m                              |     similarity     
+----------+-------------------------------------------------------------+--------------------
+ 11237434 | CN1Cc2cc(Cl)ccc2-n2c(nnc2C2CCN(c3ccccn3)CC2)C1              | 0.7049180327868853
+ 11237433 | CN1Cc2cc(Cl)ccc2-n2c(nnc2C2CCN(c3ccccn3)CC2)C1.Cl.Cl.Cl     | 0.6935483870967742
+ 10070061 | CN1CCc2cc(Cl)ccc2-n2c(nnc2C2CCN(c3ccccn3)CC2)C1             | 0.6212121212121212
+ 11270862 | Cc1ccccc1CC(=O)N1CCC(c2nnc3n2-c2ccc(Cl)cc2CN(C)C3)CC1       | 0.5797101449275363
+ 11442570 | CN1Cc2cc(Cl)ccc2-n2c(nnc2C2CCN(C(=O)c3c[nH]c4ccccc34)CC2)C1 | 0.5774647887323944
+ 11486399 | CN1Cc2cc(Cl)ccc2-n2c(nnc2C2CCN(C(=O)CC3CC3)CC2)C1           | 0.5757575757575758
+ 11349733 | CCCC(=O)N1CCC(c2nnc3n2-c2ccc(Cl)cc2CN(C)C3)CC1              | 0.5757575757575758
+ 11305733 | CN1Cc2cc(Cl)ccc2-n2c(nnc2C2CCN(C(=O)c3cc4ccccc4[nH]3)CC2)C1 | 0.5694444444444444
+ 11166614 | CN1Cc2cc(Cl)ccc2-n2c(nnc2C2CCN(C(=O)C3(C)CCCCC3)CC2)C1      | 0.5671641791044776
+ 10028677 | CN1CCOC(CN2Cc3cc(Cl)ccc3-n3c(nnc3C3CCN(c4ccccn4)CC3)C2)C1   | 0.5616438356164384
+(10 rows)
+
+Time: 189.425 ms
+</code></pre></div></div>
+
+<p>Here are the first few of those, along with the similarity values:</p>
+
+<p><img src="images/cartridge-thoughts-img4.png" alt=""></p>
+
+<p>The five nearest neighbors for AZD7648 (https://pubs.acs.org/doi/10.1021/acs.jmedchem.9b01684) aren’t particularly similar:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# select * from get_mfp2_neighbors2('CN1C(=O)N(C2CCOCC2)C2=C1C=NC(NC1=CN3N=CN=C3C=C1C)=N2') limit 5;
+   cid    |                                   m                                   |     similarity      
+----------+-----------------------------------------------------------------------+---------------------
+ 11504903 | Cn1c(=O)c(=O)n(C2CCCC2)c2nc(Nc3ccc(C(=O)NC4CCC(N5CCOCC5)CC4)cc3)ncc21 |  0.4166666666666667
+ 11406590 | Cn1c(=O)c(Oc2ccc(F)cc2F)cc2cnc(NC3CCOCC3)nc21                         |  0.3924050632911392
+ 10230233 | Cc1cc(=O)n(C2CCCC2)c2nc(Nc3ccc(N4CCC(CCCN5CCOCC5)CC4)cc3)ncc12        |  0.3595505617977528
+  9801449 | Cc1nc2cnc(Nc3ccc(N4CCOCC4)cc3)nc2n(C2CCCC2)c1=O                       | 0.35443037974683544
+ 10224126 | Cc1cc(=O)n(C2CCCC2)c2nc(Nc3ccc(N4CCOCC4)c(F)c3)ncc12                  |  0.3488372093023256
+(5 rows)
+
+Time: 219.653 ms
+</code></pre></div></div>
+
+<p>As we can see:</p>
+
+<p><img src="images/cartridge-thoughts-img5.png" alt=""></p>
+
+<p>The performance of these queries isn’t quite as good as what you can do with
+specialized open-source tools like chemfp, gpusimilarity, or FPSim2, but I think
+it’s reasonable for retrieving a set of neighbors that I’m then going to do
+(probably more time consuming) further analysis on.</p>
+
+<p><strong>Note</strong> that the similarity queries were considerably slower in the original
+version of this blog post. This was likely due to me doing a bad job of warming
+up the disk cache.</p>
+
+<h1 id="some-technical-details">
+<a class="anchor" href="#some-technical-details" aria-hidden="true"><span class="octicon octicon-link"></span></a>Some technical details:</h1>
+
+<h2 id="sizes-of-the-tables-and-indices">
+<a class="anchor" href="#sizes-of-the-tables-and-indices" aria-hidden="true"><span class="octicon octicon-link"></span></a>Sizes of the tables and indices</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# \d+
+                             List of relations
+ Schema |      Name       |   Type   |  Owner   |    Size    | Description 
+--------+-----------------+----------+----------+------------+-------------
+ public | fps             | table    | glandrum | 964 MB     | 
+ public | mols            | table    | glandrum | 4236 MB    | 
+ public | raw_data        | table    | glandrum | 9091 MB    | 
+ public | raw_data_id_seq | sequence | glandrum | 8192 bytes | 
+(4 rows)
+pubchem_compound=# \di+
+                              List of relations
+ Schema |     Name      | Type  |  Owner   |  Table   |  Size   | Description 
+--------+---------------+-------+----------+----------+---------+-------------
+ public | fps_mfp2_idx  | index | glandrum | fps      | 1226 MB | 
+ public | fps_pkey      | index | glandrum | fps      | 214 MB  | 
+ public | molidx        | index | glandrum | mols     | 4060 MB | 
+ public | mols_pkey     | index | glandrum | mols     | 214 MB  | 
+ public | raw_data_pkey | index | glandrum | raw_data | 2193 MB | 
+(5 rows)
+</code></pre></div></div>
+
+<h2 id="performance-of-the-substructure-indices">
+<a class="anchor" href="#performance-of-the-substructure-indices" aria-hidden="true"><span class="octicon octicon-link"></span></a>Performance of the substructure indices</h2>
+<p>Here are results for the substructure queries executed above. For the purposes
+of this analysis I removed the limit on the query:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# explain analyze select * from mols where m@&gt;'CC1=C(C=C(C=C1)C(N)=O)C#CC1=CN=CC=C1';
+                                                        QUERY PLAN                                                         
+---------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on mols  (cost=2157.91..37897.03 rows=9999 width=398) (actual time=167.546..168.902 rows=1 loops=1)
+   Recheck Cond: (m @&gt; 'Cc1ccc(C(N)=O)cc1C#Cc1cccnc1'::mol)
+   Rows Removed by Index Recheck: 328
+   Heap Blocks: exact=309
+   -&gt;  Bitmap Index Scan on molidx  (cost=0.00..2155.41 rows=9999 width=0) (actual time=137.703..137.703 rows=329 loops=1)
+         Index Cond: (m @&gt; 'Cc1ccc(C(N)=O)cc1C#Cc1cccnc1'::mol)
+ Planning Time: 0.119 ms
+ Execution Time: 169.178 ms
+(8 rows)
+
+pubchem_compound=# explain analyze select * from mols where m@&gt;'CC1=CC2=C(S1)C(=O)NC(C)=N2';
+                                                        QUERY PLAN                                                        
+--------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on mols  (cost=2157.91..37897.03 rows=9999 width=398) (actual time=436.998..510.558 rows=46 loops=1)
+   Recheck Cond: (m @&gt; 'Cc1nc2cc(C)sc2c(=O)[nH]1'::mol)
+   Rows Removed by Index Recheck: 14
+   Heap Blocks: exact=55
+   -&gt;  Bitmap Index Scan on molidx  (cost=0.00..2155.41 rows=9999 width=0) (actual time=436.902..436.902 rows=60 loops=1)
+         Index Cond: (m @&gt; 'Cc1nc2cc(C)sc2c(=O)[nH]1'::mol)
+ Planning Time: 0.113 ms
+ Execution Time: 510.801 ms
+(8 rows)
+
+
+pubchem_compound=# explain analyze select * from mols where m@&gt;'CN1C(=O)N(C)C2=C1C=NC(N)=N2';
+                                                         QUERY PLAN                                                         
+----------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on mols  (cost=2157.91..37897.03 rows=9999 width=398) (actual time=5111.590..5113.136 rows=38 loops=1)
+   Recheck Cond: (m @&gt; 'Cn1c(=O)n(C)c2nc(N)ncc21'::mol)
+   Rows Removed by Index Recheck: 10
+   Heap Blocks: exact=48
+   -&gt;  Bitmap Index Scan on molidx  (cost=0.00..2155.41 rows=9999 width=0) (actual time=5081.767..5081.768 rows=48 loops=1)
+         Index Cond: (m @&gt; 'Cn1c(=O)n(C)c2nc(N)ncc21'::mol)
+ Planning Time: 0.058 ms
+ Execution Time: 5113.296 ms
+(8 rows)
+</code></pre></div></div>
+
+<p>All of those show that the index is doing a reasonably good job of pruning
+compounds - the worst case query (the first one) only ends up trying at 329
+substructure queries (instead of 10 million!) to find the 1 actual match.</p>
+
+<h2 id="warming-up-the-disk-cache">
+<a class="anchor" href="#warming-up-the-disk-cache" aria-hidden="true"><span class="octicon octicon-link"></span></a>Warming up the disk cache</h2>
+
+<p>There are tons of ways to do this. Here’s the approach I used for this post:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pubchem_compound=# select cid,mol_murckoscaffold(m) scaff into temporary table scaffs from mols order by cid desc limit 10;
+SELECT 10
+pubchem_compound=# select count(*) from mols cross join scaffs where mols.m@&gt;scaffs.scaff;
+ count  
+--------
+ 178828
+(1 row)
+pubchem_compound=# select * into blah from fps order by cid desc limit 10;
+SELECT 10
+pubchem_compound=# select count(*) from fps cross join blah where blah.mfp2%fps.mfp2;
+ count 
+-------
+   401
+(1 row)
+</code></pre></div></div>
+
+<p>That takes ~10 minutes to run for me.</p>
+
+<h2 id="doing-the-queries-and-making-the-images">
+<a class="anchor" href="#doing-the-queries-and-making-the-images" aria-hidden="true"><span class="octicon octicon-link"></span></a>Doing the queries and making the images</h2>
+<p>Since I’m not doing this one from a jupyter notebook, here’s the code snippet
+I’m using in jupyter to do the substructure queries and display the results:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>q='CN1C(=O)N(C)C2=C1C=NC(N)=N2'
+t1=time.time()
+d = %sql postgresql://localhost/pubchem_compound select * from mols where m@&gt;:q limit 10;
+t2 = time.time()
+print(f'{t2-t1:.2f} seconds')
+ms = [Chem.MolFromSmiles(x) for x in [q]+[x[1] for x in d]]
+ls = ['query']+[str(x[0]) for x in d]
+Draw.MolsToGridImage(ms[:8],legends=ls,molsPerRow=4)
+</code></pre></div></div>
+
+<p>And the equivalent thing for nearest-neighbor queries:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>q='CN1CC2=NN=C(C3CCC(CC3)OC3=CC=CC=N3)N2C2=CC=C(Cl)C=C2C1'
+t1=time.time()
+d = %sql postgresql://localhost/pubchem_compound select * from get_mfp2_neighbors2(:q) limit 10;
+t2 = time.time()
+print(f'{t2-t1:.2f} seconds')
+ms = [Chem.MolFromSmiles(x) for x in [q]+[x[1] for x in d]]
+ls = ['query']+[f'{x[0]} {x[2] :.2f}' for x in d]
+Draw.MolsToGridImage(ms[:8],legends=ls,molsPerRow=4)
+</code></pre></div></div>
+
+<p>Both of these are using the fantastic
+<a href="https://github.com/catherinedevlin/ipython-sql">sql-magic</a> for jupyter from
+Catherine Devlin.</p>
+
+<h1 id="mini-rant">
+<a class="anchor" href="#mini-rant" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mini-rant</h1>
+
+<p>PostgreSQL is a general purpose relational database, it lets you store
+collections of tables with links (relations) between them and makes it easy to
+do queries that combine data across tables. If you have data on a bunch of
+molecules that can’t be logically captured in a single table (like ChEMBL!), a
+relational database is a great place to put that. If you have a single table
+with a bunch of columns (i.e. molecules and values or fingerprints computed from
+them), you may want to look to another type of system. If you have a huge number
+of rows that you are really only interested in doing chemical queries
+(substructure and similarity searches) against, and you care about performance,
+then you almost certainly should be using a specialized system. There are plenty
+to choose from!</p>
+
+  </div><a class="u-url" href="/rdkit-blog/markdown/2020/01/21/some-thoughts-on-cartridge-performance.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/rdkit-blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/rdkit-blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>RDKit experiments, tips, and tutorials</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/greglandrum" title="greglandrum"><svg class="svg-icon grey"><use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/dr_greg_landrum" title="dr_greg_landrum"><svg class="svg-icon grey"><use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
