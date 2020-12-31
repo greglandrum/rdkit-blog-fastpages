@@ -112,7 +112,7 @@ pubchem_compound=# select * from mols where m@>'CC1=C(C=C(C=C1)C(N)=O)C#CC1=CN=C
 
 Here's the one hit:
 
-![](images/cartridge-thoughts-img1.png)
+![]({{ site.baseurl }}/images/blog/cartridge-thoughts-img1.png)
 
 Now the core from: https://pubs.acs.org/doi/10.1021/acs.jmedchem.9b01427
 
@@ -136,7 +136,7 @@ Time: 6.532 ms
 
 And the results:
 
-![](images/cartridge-thoughts-img2.png)
+![]({{ site.baseurl }}/images/blog/cartridge-thoughts-img2.png)
 
 And, finally, the core from: https://pubs.acs.org/doi/10.1021/acs.jmedchem.9b01684
 
@@ -161,7 +161,7 @@ Time: 107.934 ms
 
 And the first results:
 
-![](images/cartridge-thoughts-img3.png)
+![]({{ site.baseurl }}/images/blog/cartridge-thoughts-img3.png)
 
 These queries are, in general, pretty quick. I'm certainly likely to spend more
 time looking at the results than I am waiting for them to come back.
@@ -254,7 +254,7 @@ Time: 189.425 ms
 
 Here are the first few of those, along with the similarity values:
 
-![](images/cartridge-thoughts-img4.png)
+![]({{ site.baseurl }}/images/blog/cartridge-thoughts-img4.png)
 
 The five nearest neighbors for AZD7648 (https://pubs.acs.org/doi/10.1021/acs.jmedchem.9b01684) aren't particularly similar:
 
@@ -274,7 +274,7 @@ Time: 219.653 ms
 
 As we can see:
 
-![](images/cartridge-thoughts-img5.png)
+![]({{ site.baseurl }}/images/blog/cartridge-thoughts-img5.png)
 
 The performance of these queries isn't quite as good as what you can do with
 specialized open-source tools like chemfp, gpusimilarity, or FPSim2, but I think
