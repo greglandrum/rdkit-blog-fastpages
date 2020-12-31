@@ -1,0 +1,15 @@
+name: py38_rdkit_blog
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8
+  - rdkit
+  - jupyter
+  - py3dmol
+  - networkx
+  - ipywidgets
+  - ipycytoscape
+  - ipython-sql
+  - matplotlib
+  
