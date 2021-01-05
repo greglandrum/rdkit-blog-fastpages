@@ -191,21 +191,25 @@ export PYTHONPATH="$RDBASE"
 <a class="anchor" href="#the-recipe" aria-hidden="true"><span class="octicon octicon-link"></span></a>The recipe</h1>
 <p>Here’s the complete recipe:</p>
 
-<p>’’’
-git clone https://github.com/rdkit/rdkit.git
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/rdkit/rdkit.git
 cd rdkit
-export RDBASE=<code class="language-plaintext highlighter-rouge">pwd</code>
+export RDBASE=`pwd`
 conda create -y -n py37_rdkit_beta python=3.7
 conda activate py37_rdkit_beta
 conda install -y -c rdkit/label/beta rdkit
 cd $CONDA_PREFIX/lib/python3.7/site-packages/rdkit
-rsync -a -m –include ‘<em>/’ –include=’</em>.so’ –include=’inchi.py’ –exclude=’*’ . $RDBASE/rdkit
-export PYTHONPATH=”$RDBASE”
+rsync -a -m --include '*/' --include='*.so' --include='inchi.py' --exclude='*' . $RDBASE/rdkit
+export PYTHONPATH="$RDBASE"
 cd $RDBASE/rdkit
-python -c ‘from rdkit import Chem;print(Chem.<strong>file</strong>)’
-‘’’</p>
+python -c 'from rdkit import Chem;print(Chem.__file__)'
+</code></pre></div></div>
 
-  </div><a class="u-url" href="/rdkit-blog/contributing/tutorial/2020/03/30/setting-up-an-environment.html" hidden></a>
+  </div><hr />
+<div id="copyright">
+<p class="post-meta">Copyright (C) 2020 Greg Landrum. This work is licensed under a 
+    <a href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a></p>
+</div> 
+<a class="u-url" href="/rdkit-blog/contributing/tutorial/2020/03/30/setting-up-an-environment.html" hidden></a>
 </article>
       </div>
     </main><footer class="site-footer h-card">
