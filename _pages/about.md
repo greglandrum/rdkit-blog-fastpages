@@ -4,6 +4,8 @@ title: About this blog
 permalink: /about/
 ---
 
+The repo with the original Jupyter notebooks and data [is here](https://github.com/greglandrum/rdkit_blog)
+
 The hub for information about the RDKit is [rdkit.org](https://www.rdkit.org)
 
 If you're an Anaconda Python user, installing the RDKit is as simple as `conda install -c conda-forge rdkit`
