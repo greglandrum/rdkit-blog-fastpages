@@ -93,7 +93,7 @@ export PYTHONPATH="$RDBASE"
 # The recipe
 Here's the complete recipe:
 
-'''
+```
 git clone https://github.com/rdkit/rdkit.git
 cd rdkit
 export RDBASE=`pwd`
@@ -105,4 +105,4 @@ rsync -a -m --include '*/' --include='*.so' --include='inchi.py' --exclude='*' .
 export PYTHONPATH="$RDBASE"
 cd $RDBASE/rdkit
 python -c 'from rdkit import Chem;print(Chem.__file__)'
-'''
+```
