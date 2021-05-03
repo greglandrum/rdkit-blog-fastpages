@@ -15,7 +15,8 @@ We've added a new API which makes it easy to use the RDKit from programming lang
 
 The majority of the RDKit is written in C++, but we also make wrappers allowing
 you to use it from other programming languages. The main one of these, and the
-most complete, i
+most complete, is for Python and is written by hand (using Boost::Python). The
+Java and C# wrappers are generated more or less automatically using SWIG.
 
 Back in 2019 we decided to do a JavaScript (JS) wrapper which follows a slightly
 different approach: instead of wrapping the whole toolkit the new JS wrappers
