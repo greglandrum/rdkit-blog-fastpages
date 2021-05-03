@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>A new way to use the RDKit from other languages | RDKit blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="A new way to use the RDKit from other languages" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Introducing the RDKit CFFI interface" />
+<meta property="og:description" content="Introducing the RDKit CFFI interface" />
+<link rel="canonical" href="https://greglandrum.github.io/rdkit-blog/technical/2021/05/01/rdkit-cffi-part1.html" />
+<meta property="og:url" content="https://greglandrum.github.io/rdkit-blog/technical/2021/05/01/rdkit-cffi-part1.html" />
+<meta property="og:site_name" content="RDKit blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-05-01T00:00:00-05:00" />
+<script type="application/ld+json">
+{"url":"https://greglandrum.github.io/rdkit-blog/technical/2021/05/01/rdkit-cffi-part1.html","@type":"BlogPosting","headline":"A new way to use the RDKit from other languages","dateModified":"2021-05-01T00:00:00-05:00","datePublished":"2021-05-01T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://greglandrum.github.io/rdkit-blog/technical/2021/05/01/rdkit-cffi-part1.html"},"description":"Introducing the RDKit CFFI interface","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/rdkit-blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://greglandrum.github.io/rdkit-blog/feed.xml" title="RDKit blog" /><!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-113661686-1','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+
+<link rel="shortcut icon" type="image/x-icon" href="/rdkit-blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/rdkit-blog/">RDKit blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/rdkit-blog/about/">About this blog</a><a class="page-link" href="/rdkit-blog/search/">Search</a><a class="page-link" href="/rdkit-blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">A new way to use the RDKit from other languages</h1><p class="page-description">Introducing the RDKit CFFI interface</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-05-01T00:00:00-05:00" itemprop="datePublished">
+        May 1, 2021
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      8 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/rdkit-blog/categories/#technical">technical</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h1"><a href="#tldr">TL;DR</a></li>
+<li class="toc-entry toc-h1"><a href="#intro">Intro</a></li>
+<li class="toc-entry toc-h1"><a href="#how-it-works">How it works</a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#parsing-molecule-formats-and-operating-on-molecules">Parsing molecule formats and operating on molecules</a></li>
+<li class="toc-entry toc-h2"><a href="#modifying-molecules">Modifying molecules</a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h1"><a href="#an-aside-about-an-interesting-way-rdkit-cffi-could-be-used">An aside about an interesting way rdkit-cffi could be used</a></li>
+<li class="toc-entry toc-h1"><a href="#status">Status</a></li>
+<li class="toc-entry toc-h1"><a href="#wrapping-up">Wrapping up</a></li>
+</ul><h1 id="tldr">
+<a class="anchor" href="#tldr" aria-hidden="true"><span class="octicon octicon-link"></span></a>TL;DR</h1>
+
+<p>We’ve added a new API which makes it easy to use the RDKit from programming languages other than C++, Python, Java or C#.</p>
+
+<h1 id="intro">
+<a class="anchor" href="#intro" aria-hidden="true"><span class="octicon octicon-link"></span></a>Intro</h1>
+
+<p>The majority of the RDKit is written in C++, but we also make wrappers allowing
+you to use it from other programming languages. The main one of these, and the
+most complete, i</p>
+
+<p>Back in 2019 we decided to do a JavaScript (JS) wrapper which follows a slightly
+different approach: instead of wrapping the whole toolkit the new JS wrappers
+provide access to a useful subset of RDKit functionality provided as functions.
+We called this <code class="language-plaintext highlighter-rouge">MinimalLib</code> and there’s more information in an <a href="http://rdkit.blogspot.com/2019/11/introducing-new-rdkit-javascript.html">earlier blog
+post</a>.</p>
+
+<p>We’ve now extended <code class="language-plaintext highlighter-rouge">MinimalLib</code> and made it useable from any programming
+language which supports calling into external libraries written in C (often
+called using a “C Foreign Function Interface”, or CFFI). Since most common
+programming languages support CFFI, I think this will help bring chemistry to a
+bunch of other languages.</p>
+
+<h1 id="how-it-works">
+<a class="anchor" href="#how-it-works" aria-hidden="true"><span class="octicon octicon-link"></span></a>How it works</h1>
+
+<p>This is easiest explained with an example. Since each programming language
+implements CFFI slightly differently, and I’m not even close to being good at
+some of the more intersting ones like go, Rust, or Julia, I’ll demonstrate using
+C itself and sample code adapted from
+<a href="https://github.com/rdkit/rdkit/blob/master/Code/MinimalLib/cffi_test.c">cffi_test.c</a>,
+one of the files used to test the new interface.</p>
+
+<p>The general pattern when working with rdkit-cffi is to parse a molecule input
+format to get back a serialized (“pickled”) form of that molecule and then to
+pass that pickled molecule to other functions which do the chemistry operations
+you’re interested in.</p>
+
+<h2 id="parsing-molecule-formats-and-operating-on-molecules">
+<a class="anchor" href="#parsing-molecule-formats-and-operating-on-molecules" aria-hidden="true"><span class="octicon octicon-link"></span></a>Parsing molecule formats and operating on molecules</h2>
+
+<p>The “hello world” equivalent in cheminformatics is generating canonical SMILES. Here’s a full C program showing how you do that with rdkit-cffi, I will explain the rdkit-cffi functions and how they are used in more detail below:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+#include "cffiwrapper.h"
+
+void canon_smiles(){
+  char *pkl;
+  size_t pkl_size;
+  
+  pkl = get_mol("c1cc(O)ccc1",&amp;pkl_size,"");
+  char *smiles=get_smiles(pkl,pkl_size,NULL);
+  printf("Canonical SMILES: %s\n",smiles);
+  free(smiles);
+  free(pkl);
+}
+
+int main(){
+  enable_logging();
+  printf("hello %s\n",version()); 
+  canon_smiles();
+  return 0;
+}
+</code></pre></div></div>
+
+<p>I compiled this on my linux machine as follows:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>% cc -o demo.exe -I $RDBASE/Code demo.c $RDBASE/lib/librdkitcffi.so
+</code></pre></div></div>
+<p>Running it produces:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>% ./demo.exe
+hello 2021.09.1pre
+Canonical SMILES: Oc1ccccc1
+</code></pre></div></div>
+
+<p>Let’s look at the rdkit-cffi parts of this, starting with the <code class="language-plaintext highlighter-rouge">main()</code> function.</p>
+
+<p>We start by enabling the RDKit’s logging system:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  enable_logging();
+</code></pre></div></div>
+<p>If you skip this, you won’t see any of the usual RDKit errors or warnings.</p>
+
+<p>Next we use the <code class="language-plaintext highlighter-rouge">version()</code> function to get the version of the RDKit which is being used and then print that out.</p>
+
+<p>With that basic initialization out of the way we call the function <code class="language-plaintext highlighter-rouge">canon_smiles()</code>, which is where the real work happens. 
+Here we start by parsing a SMILES using the <code class="language-plaintext highlighter-rouge">get_mol()</code> function:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  pkl = get_mol("c1cc(O)ccc1",&amp;pkl_size,"");
+
+</code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">get_mol()</code> returns a binary string with the pickled representation of the
+molecule and uses the <code class="language-plaintext highlighter-rouge">pkl_size</code> argument (an integer) to return the length of
+that string (this is an unfortunately necessary implementation detail). The
+final argument to <code class="language-plaintext highlighter-rouge">get_mol()</code>, the empty string, can be used to pass in an JSON
+string containing additional arguments controlling the parsing (we could have
+also passed this argument as NULL). <code class="language-plaintext highlighter-rouge">get_mol()</code> currently supports constructing
+molecules from SMILES (and CXSMILES), Mol/SDF, and the RDKit’s JSON format; it
+recognized automatically which parser should be used. We will be expanding the
+list of supported formats in the future.</p>
+
+<p>After we have the molecule processed we can get the canonical SMILES for it by
+calling the <code class="language-plaintext highlighter-rouge">get_smiles()</code> function:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  char *smiles=get_smiles(pkl,pkl_size,NULL);
+</code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">get_smiles()</code> follows the general pattern for rdkit-cffi functions which
+operate on molecules: the first two arguments are the pickled molecule and the
+length of the pickle string, the third argument is a JSON string with additional
+options to be used when generating the SMILES; in this case we want the
+defaults, so we pass a NULL pointer (we could also have used the empty string
+<code class="language-plaintext highlighter-rouge">""</code>).</p>
+
+<p>Finally, and not to be overlooked when working in C, we need to free the memory
+which was allocated to hold the molecule pickle and the SMILES:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  free(smiles);
+  free(pkl);
+</code></pre></div></div>
+
+<p>The functions which are available are declared in <a href="https://github.com/rdkit/rdkit/blob/master/Code/MinimalLib/cffiwrapper.h">cffiwrapper.h</a>.</p>
+
+<h2 id="modifying-molecules">
+<a class="anchor" href="#modifying-molecules" aria-hidden="true"><span class="octicon octicon-link"></span></a>Modifying molecules</h2>
+
+<p>Some rdkit-cffi functions modify the molecule. In this case the general pattern
+is the modify the molecule <em>in place</em>, i.e. to modify the current molecule
+instead of returning a new one.</p>
+
+<p>Here’s a simple function which parses a SMILES, add Hs to the molecule,
+generates a 3D conformer using a fixed random seed, and then prints out the
+molblock for the modified molecule:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>void generate_conformer(){
+  char *pkl;
+  size_t pkl_size;
+  
+  pkl = get_mol("c1cc(O)ccc1",&amp;pkl_size,NULL);
+
+  add_hs(&amp;pkl,&amp;pkl_size);
+
+  set_3d_coords(&amp;pkl,&amp;pkl_size,"{\"randomSeed\":42}");
+
+  char *molb = get_molblock(pkl,pkl_size,NULL);
+  printf("%s\n",molb);
+  free(molb);
+  free(pkl);
+}
+</code></pre></div></div>
+<p>We’ve already seen <code class="language-plaintext highlighter-rouge">get_mol()</code>. As mentioned above <code class="language-plaintext highlighter-rouge">add_hs()</code> modifies the
+molecule in place, so you need to pass pointers to the pickle string and pickle
+size so that they can be modifed. <code class="language-plaintext highlighter-rouge">set_3d_coords()</code> also modifies the molecule
+in place to add the conformer. This is also the first time we use the JSON
+string that most of the functions take as their last argument: here we set the
+random number seed used in the conformer generation so that we get reproducible
+results. Finally <code class="language-plaintext highlighter-rouge">get_molblock()</code>, like <code class="language-plaintext highlighter-rouge">get_smiles()</code>, returns a string with
+the MOL file data for the molecule. This can be saved to a file and opened in
+most chemistry software.</p>
+
+<h1 id="an-aside-about-an-interesting-way-rdkit-cffi-could-be-used">
+<a class="anchor" href="#an-aside-about-an-interesting-way-rdkit-cffi-could-be-used" aria-hidden="true"><span class="octicon octicon-link"></span></a>An aside about an interesting way rdkit-cffi could be used</h1>
+
+<p>The RDKit has a lot of functionality, and covering all of that in the interface
+exposed by <code class="language-plaintext highlighter-rouge">rdkit-cffi</code> is not a goal. We want to provide a useful (hopefully
+very useful) subset of the functionality for use in other languages. If there’s
+something you think is missing, please <a href="https://github.com/rdkit/rdkit/discussions">ask about
+it</a>.</p>
+
+<p>I think you there’s another interesting use case for this though. Suppose you
+have an idea for some interesting new piece of cheminformatics functionality,
+and you’d like to work in a language like Rust or Julia but you don’t want to
+have to deal with all the basic cheminformatics plumbing yourself. <code class="language-plaintext highlighter-rouge">rdkit-cffi</code>
+can really help here. The key functionality for this mode is the <code class="language-plaintext highlighter-rouge">get_json()</code>
+function, which returns an easily parsed JSON representation of the molecule
+using the RDKit’s extension to the <a href="https://github.com/CommonChem/CommonChem">commonchem JSON
+format</a>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>void json_output(){
+  char *pkl;
+  size_t pkl_size;
+  
+  pkl = get_mol("c1cc(O)ccc1",&amp;pkl_size,"");
+  char *json=get_json(pkl,pkl_size,NULL);
+  printf("%s\n",json);
+  free(json);
+  free(pkl);
+}
+</code></pre></div></div>
+<p>The output here (after running through a JSON pretty printer) is:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+  "commonchem": {
+    "version": 10
+  },
+  "defaults": {
+    "atom": {
+      "z": 6,
+      "impHs": 0,
+      "chg": 0,
+      "nRad": 0,
+      "isotope": 0,
+      "stereo": "unspecified"
+    },
+    "bond": {
+      "bo": 1,
+      "stereo": "unspecified"
+    }
+  },
+  "molecules": [
+    {
+      "atoms": [
+        {
+          "impHs": 1
+        },
+        {
+          "impHs": 1
+        },
+        {},
+        {
+          "z": 8,
+          "impHs": 1
+        },
+        {
+          "impHs": 1
+        },
+        {
+          "impHs": 1
+        },
+        {
+          "impHs": 1
+        }
+      ],
+      "bonds": [
+        {
+          "bo": 2,
+          "atoms": [0,1]
+        },
+        {
+          "atoms": [1,2]
+        },
+        {
+          "atoms": [2,3]
+        },
+        {
+          "bo": 2,
+          "atoms": [2,4]
+        },
+        {
+          "atoms": [4,5]
+        },
+        {
+          "bo": 2,
+          "atoms": [5,6]
+        },
+        {
+          "atoms": [6,0]
+        }
+      ],
+      "extensions": [
+        {
+          "name": "rdkitRepresentation",
+          "formatVersion": 1,
+          "toolkitVersion": "2021.09.1pre",
+          "aromaticAtoms": [0,1,2,4,5,6],
+          "aromaticBonds": [0,1,3,4,5,6],
+          "atomRings": [[0,6,5,4,2,1]
+          ]
+        }
+      ]
+    }
+  ]
+}
+</code></pre></div></div>
+<p>It should be easy to parse this with the JSON parser in any modern programming
+language, and the format provides all the information you need to reconstruct a
+molecule in whatever representation you’re using in your language of choice. But
+you can do it without having to worry about dealing with chemistry perception,
+ring finding, etc.</p>
+
+<h1 id="status">
+<a class="anchor" href="#status" aria-hidden="true"><span class="octicon octicon-link"></span></a>Status</h1>
+
+<p>The new CFFI interface is currently available on the RDKit master branch. It
+hasn’t yet been officially released, but I’m publicizing it now because I’d like to
+try and get people using it and providing feedback and suggestions so that we
+can get it as polished and useful as possible before the 2021.09 release later
+this year.</p>
+
+<p>I’ve setup a <a href="https://github.com/greglandrum/rdkit-minimallib-build">separate repo in
+github</a> which has a link
+to Azure Pipelines to automatically do builds of the CFFI wrappers and make the
+shared libraries available. The README there also includes links you can use to
+download the most recent builds for Linux and the Mac (I still need to get the
+automated Windows builds working). I haven’t figured out how to actually make
+this easy (unless you have the azure CLI installed, in which case there’s a
+single command you can execute), so there are a number of clicks needed:</p>
+
+<p>Start by picking the build you want from the README:
+<img src="/rdkit-blog/images/blog/cffi-shot1.png" alt=""></p>
+
+<p>Now click the build identifier (this page also has the azure CLI command to get the build directly):
+<img src="/rdkit-blog/images/blog/cffi-shot2.png" alt=""></p>
+
+<p>Pick the appropriate job:
+<img src="/rdkit-blog/images/blog/cffi-shot3.png" alt=""></p>
+
+<p>Click the “1 artifact” link:
+<img src="/rdkit-blog/images/blog/cffi-shot4.png" alt=""></p>
+
+<p>now you can actually download the artifact:
+<img src="/rdkit-blog/images/blog/cffi-shot5.png" alt=""></p>
+
+<p><em>sigh</em> I will try to find a way to make this simpler…</p>
+
+<h1 id="wrapping-up">
+<a class="anchor" href="#wrapping-up" aria-hidden="true"><span class="octicon octicon-link"></span></a>Wrapping up</h1>
+
+<p>I will likely do another post on rdkit-cffi before the next release, most likely
+one looking at things like performance (since that’s something I tend to do). In
+the meantime please let me know if you start using it!</p>
+
+  </div><hr />
+<div id="copyright">
+<p class="post-meta">Copyright (C) 2021 Greg Landrum. This work is licensed under a 
+    <a href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a></p>
+</div> 
+<a class="u-url" href="/rdkit-blog/technical/2021/05/01/rdkit-cffi-part1.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/rdkit-blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/rdkit-blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>RDKit experiments, tips, and tutorials</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/greglandrum" title="greglandrum"><svg class="svg-icon grey"><use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/dr_greg_landrum" title="dr_greg_landrum"><svg class="svg-icon grey"><use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
