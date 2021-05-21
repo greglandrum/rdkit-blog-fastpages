@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Fingerprint similarity thresholds for database searches | RDKit blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Fingerprint similarity thresholds for database searches" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="FOMO and similarity search" />
+<meta property="og:description" content="FOMO and similarity search" />
+<link rel="canonical" href="https://greglandrum.github.io/rdkit-blog/similarity/reference/2021/05/21/similarity-search-thresholds.html" />
+<meta property="og:url" content="https://greglandrum.github.io/rdkit-blog/similarity/reference/2021/05/21/similarity-search-thresholds.html" />
+<meta property="og:site_name" content="RDKit blog" />
+<meta property="og:image" content="https://greglandrum.github.io/rdkit-blog/images/blog/similarity-search-threshold1-img1.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-05-21T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"FOMO and similarity search","url":"https://greglandrum.github.io/rdkit-blog/similarity/reference/2021/05/21/similarity-search-thresholds.html","@type":"BlogPosting","headline":"Fingerprint similarity thresholds for database searches","dateModified":"2021-05-21T00:00:00-05:00","datePublished":"2021-05-21T00:00:00-05:00","image":"https://greglandrum.github.io/rdkit-blog/images/blog/similarity-search-threshold1-img1.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://greglandrum.github.io/rdkit-blog/similarity/reference/2021/05/21/similarity-search-thresholds.html"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/rdkit-blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://greglandrum.github.io/rdkit-blog/feed.xml" title="RDKit blog" /><!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-113661686-1','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+
+<link rel="shortcut icon" type="image/x-icon" href="/rdkit-blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/rdkit-blog/">RDKit blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/rdkit-blog/about/">About this blog</a><a class="page-link" href="/rdkit-blog/search/">Search</a><a class="page-link" href="/rdkit-blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Fingerprint similarity thresholds for database searches</h1><p class="page-description">FOMO and similarity search</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-05-21T00:00:00-05:00" itemprop="datePublished">
+        May 21, 2021
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      12 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/rdkit-blog/categories/#similarity">similarity</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/rdkit-blog/categories/#reference">reference</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h1"><a href="#prologue">Prologue</a></li>
+<li class="toc-entry toc-h1"><a href="#intro--results">Intro / Results</a></li>
+<li class="toc-entry toc-h1"><a href="#method">Method</a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#similarity-between-random-molecules">Similarity between random molecules</a></li>
+<li class="toc-entry toc-h2"><a href="#groups-of-related-compounds">Groups of related compounds</a></li>
+<li class="toc-entry toc-h2"><a href="#determining-background-retrieval-rates">Determining background retrieval rates</a></li>
+<li class="toc-entry toc-h2"><a href="#summarizing-the-data">Summarizing the data</a></li>
+<li class="toc-entry toc-h2"><a href="#the-notebooks">The notebooks</a></li>
+</ul>
+</li>
+</ul><h1 id="prologue">
+<a class="anchor" href="#prologue" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prologue</h1>
+<p>If you’re interested in this topic and have questions, notice mistakes in my
+analysis, or have suggestions or ideas for improving this (particularly when it
+comes to the sets of “related compounds” I use), please either send me email or
+leave a comment.</p>
+
+<h1 id="intro--results">
+<a class="anchor" href="#intro--results" aria-hidden="true"><span class="octicon octicon-link"></span></a>Intro / Results</h1>
+
+<p>One of the RDKit blog posts I refer back to the most is the one where I tried to
+establish the Tanimoto similarity value which constitutes a “noise level” for
+each of the fingerprints the RDKit supports by looking at the distributions of
+similarities between randomly chosen molecules. I periodically update the post
+just in case the threshold values change with RDKit versions. Here’s <a href="https://greglandrum.github.io/rdkit-blog/fingerprints/similarity/reference/2021/05/18/fingerprint-thresholds1.html">the most
+recent version of the
+post</a>
+and the <a href="https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds.ipynb">associated jupyter
+notebook</a>.
+I find it really useful to be able to say things like “The 95% noise level for
+Tanimoto similarity calculated with the the bit-based version of the RDKit’s
+MFP2 is 0.27.” Based on this I know that when doing similarity searches the
+threshold for MFP2 shouldn’t be set below 0.27 (I normally say 0.3) in most cases.
+But that analysis doesn’t tell me what I should set the threshold to.</p>
+
+<p>Of course the answer to that question is “it depends”. Let’s assume that the
+database you’re searching contains a certain number of compounds which would
+actually be interesting for you and a much larger number of compounds which are
+not interesting (at least not for the search you’re currently running). And
+let’s further assume that the similarities between those interesting compounds
+and your query is generally above the noise level for the fingerprint you’re
+using. Any similarity search is going to return a mix of both interesting and
+non-interesting compounds and the proportions in that mix are generally going to
+be determined by the similarity threshould you use. Setting the similarity
+threshold high tends to give a larger proportion of interesting compounds at
+the cost of missing interesting compounds while a lower threshold will return
+more of the interesting compounds but a higher fraction of uninteresting
+compounds.</p>
+
+<p>Basically how bad your FOMO is will determine how many results you need to look
+through.</p>
+
+<p>This isn’t a big deal if you’re searching a small database and or if you’re
+going to be post-processing the results using some other computational tool, but
+if the idea is that you’re going to actually be <em>looking</em> at the results of the
+similarity search, then result sets with 10K or more rows are going to require a
+lot of patience.</p>
+
+<p>This post is an attempt to come up with recommendations for reasonable threshold
+values for the common RDKit fingerprints so that you can make a more informed
+decision about what to use for a given search.</p>
+
+<p>There’s a more complete description below along with links to the jupyter
+notebooks with the actual code, but here’s a quick summary of what I did:</p>
+<ol>
+  <li>I started with 301 groups of related compounds (~20K compounds in all). Each
+group is a set of 50-100 compounds from a single ChEMBL document.</li>
+  <li>I calculated intra-group similarities within each of those 301 groups using
+each of the fingerprint types to determine thresholds for retrieving various
+fractions of each group.</li>
+  <li>I used that same set of 20K compounds to do similarity searches on 100K
+molecules randomly selected from ChEMBL in order to determine what fraction
+of the database would be retrieved for various similarity thresholds.</li>
+</ol>
+
+<p>Here are what the results look like for bit-based MFP2:</p>
+<table>
+<tr>
+<th></th> <th></th> <th colspan="2">0.95 of related compounds</th> <th colspan="2">0.9 of related compounds</th> <th colspan="2">0.8 of related compounds</th> <th colspan="2">0.5 of related compounds</th>
+</tr>
+<tr>
+<th>Fingerprint</th> <th>0.95 noise level</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th>
+</tr>
+<tr>
+<td><b>Morgan2 (bits)</b></td> <td>0.27</td> <td>0.35</td> <td>0.004 / 4004</td> <td>0.4</td> <td>0.00022 / 220</td> <td>0.45</td> <td>0.00013 / 130</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+</table>
+
+<p>The 0.95 noise level (from the previous analysis) for this FP is 0.27. If I want
+to retrieve 95% of the related compounds I need to set the similarity threshold
+to 0.35. With this threshold I would retrieve ~4000 compounds per million
+compounds in the database (0.4% of the database). Similarity, if I were willing
+to live with finding 50% of the related actives I could set the search threshold
+to 0.55, in which case I’d only retrieve ~25 rows per million compounds in the
+database.</p>
+
+<p>I find this is a useful way of thinking about the thresholds: it makes the
+balance between recall (number of interesting compounds retrieved) and the
+overall result set size visible. For example, for the MFP2 results shown above,
+if I’m willing to live with retrieving about 90% of the interesting compounds
+instead of 95% I would only have to look through about 1/20th of the results
+from the database.</p>
+
+<p>With that explained, here’s the full results table:</p>
+<table>
+<tr>
+<th></th> <th></th> <th colspan="2">0.95 of related compounds</th> <th colspan="2">0.9 of related compounds</th> <th colspan="2">0.8 of related compounds</th> <th colspan="2">0.5 of related compounds</th>
+</tr>
+<tr>
+<th>Fingerprint</th> <th>0.95 noise level</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th>
+</tr>
+<tr>
+<td><b>MACCS</b></td> <td>0.57</td> <td>0.6</td> <td>0.043 / 42525</td> <td>0.65</td> <td>0.023 / 22692</td> <td>0.7</td> <td>0.0029 / 2860</td> <td>0.8</td> <td>9e-05 / 90</td> </tr>
+<tr>
+<td><b>Morgan0 (counts)</b></td> <td>0.57</td> <td>0.55</td> <td>0.06 / 60417</td> <td>0.6</td> <td>0.015 / 14750</td> <td>0.65</td> <td>0.0079 / 7860</td> <td>0.75</td> <td>0.00051 / 505</td> </tr>
+<tr>
+<td><b>Morgan1 (counts)</b></td> <td>0.36</td> <td>0.45</td> <td>0.0048 / 4807</td> <td>0.5</td> <td>0.00034 / 335</td> <td>0.55</td> <td>0.00019 / 187</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
+<tr>
+<td><b>Morgan2 (counts)</b></td> <td>0.25</td> <td>0.35</td> <td>0.0021 / 2092</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.45</td> <td>0.0001 / 100</td> <td>0.55</td> <td>2e-05 / 20</td> </tr>
+<tr>
+<td><b>Morgan3 (counts)</b></td> <td>0.20</td> <td>0.3</td> <td>0.00032 / 320</td> <td>0.3</td> <td>0.00032 / 320</td> <td>0.35</td> <td>0.00018 / 184</td> <td>0.45</td> <td>3.5e-05 / 35</td> </tr>
+<tr>
+<td><b>Morgan0 (bits)</b></td> <td>0.57</td> <td>0.55</td> <td>0.064 / 63897</td> <td>0.6</td> <td>0.016 / 16065</td> <td>0.65</td> <td>0.0086 / 8560</td> <td>0.75</td> <td>0.00055 / 547</td> </tr>
+<tr>
+<td><b>Morgan1 (bits)</b></td> <td>0.37</td> <td>0.45</td> <td>0.006 / 5957</td> <td>0.5</td> <td>0.0004 / 400</td> <td>0.55</td> <td>0.00022 / 222</td> <td>0.65</td> <td>2.8e-05 / 27</td> </tr>
+<tr>
+<td><b>Morgan2 (bits)</b></td> <td>0.27</td> <td>0.35</td> <td>0.004 / 4004</td> <td>0.4</td> <td>0.00022 / 220</td> <td>0.45</td> <td>0.00013 / 130</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+<tr>
+<td><b>Morgan3 (bits)</b></td> <td>0.22</td> <td>0.3</td> <td>0.00068 / 685</td> <td>0.35</td> <td>0.00037 / 372</td> <td>0.35</td> <td>0.00037 / 372</td> <td>0.5</td> <td>2e-05 / 20</td> </tr>
+<tr>
+<td><b>FeatMorgan0 (counts)</b></td> <td>0.74</td> <td>0.6</td> <td>0.26 / 260585</td> <td>0.65</td> <td>0.17 / 167575</td> <td>0.7</td> <td>0.075 / 74565</td> <td>0.8</td> <td>0.0087 / 8675</td> </tr>
+<tr>
+<td><b>FeatMorgan1 (counts)</b></td> <td>0.51</td> <td>0.55</td> <td>0.023 / 23055</td> <td>0.55</td> <td>0.023 / 23055</td> <td>0.6</td> <td>0.003 / 2985</td> <td>0.7</td> <td>0.00013 / 130</td> </tr>
+<tr>
+<td><b>FeatMorgan2 (counts)</b></td> <td>0.36</td> <td>0.45</td> <td>0.0048 / 4835</td> <td>0.5</td> <td>0.0003 / 295</td> <td>0.55</td> <td>0.00017 / 167</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
+<tr>
+<td><b>FeatMorgan3 (counts)</b></td> <td>0.28</td> <td>0.35</td> <td>0.0063 / 6264</td> <td>0.4</td> <td>0.0003 / 300</td> <td>0.45</td> <td>0.00017 / 169</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+<tr>
+<td><b>FeatMorgan0 (bits)</b></td> <td>0.74</td> <td>0.6</td> <td>0.26 / 260585</td> <td>0.65</td> <td>0.17 / 167575</td> <td>0.7</td> <td>0.075 / 74565</td> <td>0.8</td> <td>0.0087 / 8675</td> </tr>
+<tr>
+<td><b>FeatMorgan1 (bits)</b></td> <td>0.51</td> <td>0.55</td> <td>0.026 / 25797</td> <td>0.55</td> <td>0.026 / 25797</td> <td>0.6</td> <td>0.0033 / 3330</td> <td>0.7</td> <td>0.00014 / 140</td> </tr>
+<tr>
+<td><b>FeatMorgan2 (bits)</b></td> <td>0.38</td> <td>0.45</td> <td>0.0072 / 7217</td> <td>0.5</td> <td>0.00039 / 390</td> <td>0.55</td> <td>0.00022 / 220</td> <td>0.65</td> <td>3e-05 / 30</td> </tr>
+<tr>
+<td><b>FeatMorgan3 (bits)</b></td> <td>0.30</td> <td>0.4</td> <td>0.00049 / 490</td> <td>0.4</td> <td>0.00049 / 490</td> <td>0.45</td> <td>0.00027 / 270</td> <td>0.55</td> <td>3.5e-05 / 35</td> </tr>
+<tr>
+<td><b>RDKit 4 (bits)</b></td> <td>0.33</td> <td>0.5</td> <td>0.00094 / 945</td> <td>0.55</td> <td>0.00055 / 547</td> <td>0.6</td> <td>0.00015 / 150</td> <td>0.7</td> <td>4e-05 / 40</td> </tr>
+<tr>
+<td><b>RDKit 5 (bits)</b></td> <td>0.29</td> <td>0.5</td> <td>0.00035 / 350</td> <td>0.55</td> <td>0.00021 / 212</td> <td>0.6</td> <td>7.5e-05 / 75</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
+<tr>
+<td><b>RDKit 6 (bits)</b></td> <td>0.31</td> <td>0.5</td> <td>0.00026 / 260</td> <td>0.55</td> <td>0.00017 / 165</td> <td>0.6</td> <td>7e-05 / 70</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
+<tr>
+<td><b>RDKit 7 (bits)</b></td> <td>0.43</td> <td>0.5</td> <td>0.00085 / 850</td> <td>0.6</td> <td>9e-05 / 90</td> <td>0.65</td> <td>6e-05 / 60</td> <td>0.75</td> <td>2e-05 / 20</td> </tr>
+<tr>
+<td><b>linear RDKit 4 (bits)</b></td> <td>0.35</td> <td>0.5</td> <td>0.002 / 1970</td> <td>0.55</td> <td>0.0011 / 1115</td> <td>0.6</td> <td>0.00026 / 260</td> <td>0.75</td> <td>3.5e-05 / 35</td> </tr>
+<tr>
+<td><b>linear RDKit 5 (bits)</b></td> <td>0.31</td> <td>0.45</td> <td>0.0032 / 3199</td> <td>0.55</td> <td>0.00035 / 345</td> <td>0.6</td> <td>0.00011 / 110</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
+<tr>
+<td><b>linear RDKit 6 (bits)</b></td> <td>0.28</td> <td>0.45</td> <td>0.0013 / 1347</td> <td>0.5</td> <td>0.0003 / 300</td> <td>0.6</td> <td>7e-05 / 70</td> <td>0.7</td> <td>2e-05 / 20</td> </tr>
+<tr>
+<td><b>linear RDKit 7 (bits)</b></td> <td>0.26</td> <td>0.45</td> <td>0.00068 / 685</td> <td>0.5</td> <td>0.00017 / 170</td> <td>0.55</td> <td>0.00011 / 110</td> <td>0.7</td> <td>2e-05 / 20</td> </tr>
+<tr>
+<td><b>Atom Pairs (counts)</b></td> <td>0.27</td> <td>0.3</td> <td>0.006 / 5970</td> <td>0.35</td> <td>0.0031 / 3069</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.5</td> <td>3e-05 / 30</td> </tr>
+<tr>
+<td><b>Topological Torsions (counts)</b></td> <td>0.19</td> <td>0.3</td> <td>0.0008 / 800</td> <td>0.35</td> <td>0.00046 / 459</td> <td>0.45</td> <td>7.5e-05 / 75</td> <td>0.55</td> <td>2e-05 / 20</td> </tr>
+<tr>
+<td><b>Atom Pairs (bits)</b></td> <td>0.36</td> <td>0.4</td> <td>0.01 / 10055</td> <td>0.45</td> <td>0.0051 / 5092</td> <td>0.5</td> <td>0.00013 / 130</td> <td>0.55</td> <td>7.5e-05 / 75</td> </tr>
+<tr>
+<td><b>Topological Torsions (bits)</b></td> <td>0.22</td> <td>0.35</td> <td>0.00097 / 969</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.45</td> <td>0.00011 / 105</td> <td>0.55</td> <td>3e-05 / 30</td> </tr>
+<tr>
+<td><b>Avalon 512 (bits)</b></td> <td>0.51</td> <td>0.6</td> <td>0.00061 / 615</td> <td>0.65</td> <td>0.00035 / 347</td> <td>0.7</td> <td>8e-05 / 80</td> <td>0.8</td> <td>2e-05 / 20</td> </tr>
+<tr>
+<td><b>Avalon 1024 (bits)</b></td> <td>0.37</td> <td>0.55</td> <td>0.00074 / 737</td> <td>0.6</td> <td>0.00015 / 150</td> <td>0.65</td> <td>9.5e-05 / 95</td> <td>0.75</td> <td>2.5e-05 / 25</td> </tr>
+<tr>
+<td><b>Avalon 512 (counts)</b></td> <td>0.42</td> <td>0.5</td> <td>0.004 / 3975</td> <td>0.55</td> <td>0.0021 / 2122</td> <td>0.65</td> <td>0.00016 / 155</td> <td>0.75</td> <td>2.5e-05 / 25</td> </tr>
+<tr>
+<td><b>Avalon 1024 (counts)</b></td> <td>0.38</td> <td>0.5</td> <td>0.0018 / 1820</td> <td>0.55</td> <td>0.00099 / 992</td> <td>0.6</td> <td>0.00016 / 165</td> <td>0.75</td> <td>2e-05 / 20</td> </tr>
+</table>
+<p>The threshold values are rounded to the nearest 0.05.</p>
+
+<h1 id="method">
+<a class="anchor" href="#method" aria-hidden="true"><span class="octicon octicon-link"></span></a>Method</h1>
+
+<p>I won’t get into heavy detail here, the actual notebooks are linked below.</p>
+
+<h2 id="similarity-between-random-molecules">
+<a class="anchor" href="#similarity-between-random-molecules" aria-hidden="true"><span class="octicon octicon-link"></span></a>Similarity between random molecules</h2>
+
+<p>The workflow and dataset for this is described in a <a href="https://greglandrum.github.io/rdkit-blog/fingerprints/similarity/reference/2021/05/18/fingerprint-thresholds1.html">blog
+post</a>.
+The very quick summary is that I generated statistics for the similarity
+distribution of 25K random pairs of reasonable sized (MW&lt;600) molecules exported
+from ChEMBL.</p>
+
+<h2 id="groups-of-related-compounds">
+<a class="anchor" href="#groups-of-related-compounds" aria-hidden="true"><span class="octicon octicon-link"></span></a>Groups of related compounds</h2>
+
+<p>This is really the central pillar of the post: how do we pick sets of compounds
+we can use to quantify similarity search performance?</p>
+
+<p>One obvious possibility is to just take groups of molecules which are known to
+be active against the same targets. This is the classic similarity-based virtual
+screening use case and it’s one which has been done a lot in the literature.
+That’s an interesting (and important) use case and it’s something which I may
+come back to in a future post, but it requires a connection between chemical
+similarity and biological activity. That connection (or lack thereof) makes
+analysis of the threshold results more complex and introduces a significant amount of
+variability.</p>
+
+<p>Here I want to look at a different use case: searching a database and retrieving
+compounds which are chemically similar to each other. For this I need to pick
+groups of chemically similar compounds without actually using a traditional
+approach to chemical similarity. The approach I used is to assume that the
+typical medicinal chemistry SAR paper includes a bunch of compounds which come from
+a small number of chemical series (typically one). These compounds are
+definitely related to each other and it’s not unreasonable to expect that a
+similarity search for one should return the others as results.</p>
+
+<p>This led me back to an earlier <a href="http://rdkit.blogspot.com/2015/05/a-set-of-scaffolds-from-chembl-papers.html">blog post looking at identifying scaffolds from
+ChEMBL compounds tested in the same
+assay</a>
+(given the structure of ChEMBL, this implies that the compounds are from the
+same paper). That post includes some pre-filtering of the results to try and get
+only SAR papers by only keeping assays (papers) where 50-100 compounds were
+measured. For this post I re-ran that analysis against ChEMBL28. The analysis
+produced results for 402 groups (a group is the compounds tested in one assay);
+for this analysis I further filtered these down to the 301 groups (20342
+compounds in total) where the number of atoms in the scaffold is at least 50% of
+the average number of atoms for compounds in the group.</p>
+
+<p>So given these 301 groups of chemically related compounds I was ready to start
+doing some searches.</p>
+
+<h2 id="determining-background-retrieval-rates">
+<a class="anchor" href="#determining-background-retrieval-rates" aria-hidden="true"><span class="octicon octicon-link"></span></a>Determining background retrieval rates</h2>
+
+<p>In order to get a sense of how many compounds would be retrieved from a database
+when using the related compounds, I randomly picked 100K molecules from ChEMBL28
+to use as a background. I wanted a representative sample, so I didn’t apply MW
+filters when doing this selection.</p>
+
+<p>I then queried the background compounds with each of the 20K members of the
+“related compounds” set, counted the number of results each returned for each
+fingerprint/similarity threshold combination, and did statistics based on those
+results.</p>
+
+<h2 id="summarizing-the-data">
+<a class="anchor" href="#summarizing-the-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Summarizing the data</h2>
+
+<p>Here’s an example of a graphical summary of the results presented in the final
+notebook listed below:</p>
+
+<p><img src="/rdkit-blog/images/blog/similarity-search-threshold1-img1.png" alt=""></p>
+
+<p>The violin plots show the distribution of similarity values required to match
+50% of the related compound pairs for each of the fingerprints. The dark gray
+boxes show the noise level for the fingerprints. The red line shows the median
+fraction of the 100K ChEMBL compounds retrieved when using the median value from
+the violin plots as a similarity threshold.</p>
+
+<h2 id="the-notebooks">
+<a class="anchor" href="#the-notebooks" aria-hidden="true"><span class="octicon octicon-link"></span></a>The notebooks</h2>
+
+<p>Here are the github links for the notebooks I used:</p>
+<ul>
+  <li>Similarity between random molecules (this is the previous analysis): https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds.ipynb</li>
+  <li>Finding scaffolds for ChEMBL documents (also a previous analysis): https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Finding%20Scaffolds%20Revisited%20again.ipynb</li>
+  <li>Similarity distributions for related compounds: https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds%20Scaffolds.ipynb  Note that this is a new one and I’m still working on cleaning it up and adding more text/explanation</li>
+  <li>Fraction of the database retrieved when searching (this one also has the calculation of the summary results presented here): https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds%20Database%20Fraction.ipynb Note that this is a new one and I’m still working on cleaning it up and adding more text/explanation</li>
+</ul>
+
+
+  </div><hr />
+<div id="copyright">
+<p class="post-meta">Copyright (C) 2021 Greg Landrum. This work is licensed under a 
+    <a href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a></p>
+</div> 
+<a class="u-url" href="/rdkit-blog/similarity/reference/2021/05/21/similarity-search-thresholds.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/rdkit-blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/rdkit-blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>RDKit experiments, tips, and tutorials</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/greglandrum" title="greglandrum"><svg class="svg-icon grey"><use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/dr_greg_landrum" title="dr_greg_landrum"><svg class="svg-icon grey"><use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
