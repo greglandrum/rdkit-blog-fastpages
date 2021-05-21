@@ -246,9 +246,9 @@ the violin plots as a similarity threshold.
 ## The notebooks
 
 Here are the github links for the notebooks I used:
-- Similarity between random molecules (this is the previous analysis): https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds.ipynb
-- Finding scaffolds for ChEMBL documents (also a previous analysis): https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Finding%20Scaffolds%20Revisited%20again.ipynb 
-- Similarity distributions for related compounds: https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds%20Scaffolds.ipynb  Note that this is a new one and I'm still working on cleaning it up and adding more text/explanation
-- Fraction of the database retrieved when searching (this one also has the calculation of the summary results presented here): https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds%20Database%20Fraction.ipynb Note that this is a new one and I'm still working on cleaning it up and adding more text/explanation
+- Similarity between random molecules (this is the previous analysis): [https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds.ipynb](https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds.ipynb)
+- Finding scaffolds for ChEMBL documents (also a previous analysis): [https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Finding%20Scaffolds%20Revisited%20again.ipynb](https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Finding%20Scaffolds%20Revisited%20again.ipynb) 
+- Similarity distributions for related compounds: [https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds%20Scaffolds.ipynb](https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds%20Scaffolds.ipynb)  Note that this is a new one and I'm still working on cleaning it up and adding more text/explanation
+- Fraction of the database retrieved when searching (this one also has the calculation of the summary results presented here): [https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds%20Database%20Fraction.ipynb](https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds%20Database%20Fraction.ipynb) Note that this is a new one and I'm still working on cleaning it up and adding more text/explanation
 
 
