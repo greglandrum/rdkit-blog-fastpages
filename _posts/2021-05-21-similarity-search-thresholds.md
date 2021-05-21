@@ -223,10 +223,10 @@ when using the related compounds, I randomly picked 100K molecules from ChEMBL28
 to use as a background. I wanted a representative sample, so I didn't apply MW
 filters when doing this selection.
 
-I then queried the background compounds with each of the 20K members of the
-"related compounds" set, counted the number of results each returned for each
-fingerprint/similarity threshold combination, and did statistics based on those
-results.
+I then queried the background compounds with each molecule in a random subset of
+the 20K members of the "related compounds" set, counted the number of results
+each returned for each fingerprint/similarity threshold combination, and did
+statistics based on those results.
 
 
 ## Summarizing the data
