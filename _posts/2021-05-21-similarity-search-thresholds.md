@@ -7,6 +7,10 @@ title: Fingerprint similarity thresholds for database searches
 image: images/blog/similarity-search-threshold1-img1.png
 ---
 
+**Updated 22.05.2021 after I ran the background retrieval experiments using 5K
+random molecules from the "Related" set instead of the 1K in the original post.
+This doesn't have a major impact on results.
+
 # Prologue
 If you're interested in this topic and have questions, notice mistakes in my
 analysis, or have suggestions or ideas for improving this (particularly when it
@@ -73,7 +77,8 @@ Here are what the results look like for bit-based MFP2:
 <tr><th></th> <th></th> <th colspan="2">0.95 of related compounds</th> <th colspan="2">0.9 of related compounds</th> <th colspan="2">0.8 of related compounds</th> <th colspan="2">0.5 of related compounds</th></tr>
 <tr><th>Fingerprint</th> <th>0.95 noise level</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th></tr>
 <tr>
-<td><b>Morgan2 (bits)</b></td> <td>0.27</td> <td>0.35</td> <td>0.004 / 4004</td> <td>0.4</td> <td>0.00022 / 220</td> <td>0.45</td> <td>0.00013 / 130</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>Morgan2 (bits)</b></td> <td>0.27</td> <td>0.35</td> <td>0.0036 / 3567</td> <td>0.4</td> <td>0.00023 / 230</td> <td>0.45</td> <td>0.00014 / 135</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+<tr>
 </table>
 
 The 0.95 noise level (from the previous analysis) for this FP is 0.27. If I want
@@ -97,72 +102,73 @@ With that explained, here's the full results table:
 <tr><th></th> <th></th> <th colspan="2">0.95 of related compounds</th> <th colspan="2">0.9 of related compounds</th> <th colspan="2">0.8 of related compounds</th> <th colspan="2">0.5 of related compounds</th></tr>
 <tr><th>Fingerprint</th> <th>0.95 noise level</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th></tr>
 <tr>
-<td><b>MACCS</b></td> <td>0.57</td> <td>0.6</td> <td>0.043 / 42525</td> <td>0.65</td> <td>0.023 / 22692</td> <td>0.7</td> <td>0.0029 / 2860</td> <td>0.8</td> <td>9e-05 / 90</td> </tr>
+<td><b>MACCS</b></td> <td>0.57</td> <td>0.6</td> <td>0.043 / 42650</td> <td>0.65</td> <td>0.023 / 22840</td> <td>0.7</td> <td>0.003 / 3030</td> <td>0.8</td> <td>0.0001 / 100</td> </tr>
 <tr>
-<td><b>Morgan0 (counts)</b></td> <td>0.57</td> <td>0.55</td> <td>0.06 / 60417</td> <td>0.6</td> <td>0.015 / 14750</td> <td>0.65</td> <td>0.0079 / 7860</td> <td>0.75</td> <td>0.00051 / 505</td> </tr>
+<td><b>Morgan0 (counts)</b></td> <td>0.57</td> <td>0.55</td> <td>0.058 / 58467</td> <td>0.6</td> <td>0.014 / 14240</td> <td>0.65</td> <td>0.0076 / 7570</td> <td>0.75</td> <td>0.00047 / 470</td> </tr>
 <tr>
-<td><b>Morgan1 (counts)</b></td> <td>0.36</td> <td>0.45</td> <td>0.0048 / 4807</td> <td>0.5</td> <td>0.00034 / 335</td> <td>0.55</td> <td>0.00019 / 187</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>Morgan1 (counts)</b></td> <td>0.36</td> <td>0.45</td> <td>0.0042 / 4230</td> <td>0.5</td> <td>0.00032 / 320</td> <td>0.55</td> <td>0.00018 / 180</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>Morgan2 (counts)</b></td> <td>0.25</td> <td>0.35</td> <td>0.0021 / 2092</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.45</td> <td>0.0001 / 100</td> <td>0.55</td> <td>2e-05 / 20</td> </tr>
+<td><b>Morgan2 (counts)</b></td> <td>0.25</td> <td>0.35</td> <td>0.0018 / 1802</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.45</td> <td>0.00011 / 105</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
 <td><b>Morgan3 (counts)</b></td> <td>0.20</td> <td>0.3</td> <td>0.00032 / 320</td> <td>0.3</td> <td>0.00032 / 320</td> <td>0.35</td> <td>0.00018 / 184</td> <td>0.45</td> <td>3.5e-05 / 35</td> </tr>
 <tr>
-<td><b>Morgan0 (bits)</b></td> <td>0.57</td> <td>0.55</td> <td>0.064 / 63897</td> <td>0.6</td> <td>0.016 / 16065</td> <td>0.65</td> <td>0.0086 / 8560</td> <td>0.75</td> <td>0.00055 / 547</td> </tr>
+<td><b>Morgan0 (bits)</b></td> <td>0.57</td> <td>0.55</td> <td>0.062 / 61650</td> <td>0.6</td> <td>0.016 / 15515</td> <td>0.65</td> <td>0.0083 / 8250</td> <td>0.75</td> <td>0.00051 / 512</td> </tr>
 <tr>
-<td><b>Morgan1 (bits)</b></td> <td>0.37</td> <td>0.45</td> <td>0.006 / 5957</td> <td>0.5</td> <td>0.0004 / 400</td> <td>0.55</td> <td>0.00022 / 222</td> <td>0.65</td> <td>2.8e-05 / 27</td> </tr>
+<td><b>Morgan1 (bits)</b></td> <td>0.37</td> <td>0.45</td> <td>0.0052 / 5217</td> <td>0.5</td> <td>0.00038 / 380</td> <td>0.55</td> <td>0.00021 / 210</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>Morgan2 (bits)</b></td> <td>0.27</td> <td>0.35</td> <td>0.004 / 4004</td> <td>0.4</td> <td>0.00022 / 220</td> <td>0.45</td> <td>0.00013 / 130</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>Morgan2 (bits)</b></td> <td>0.27</td> <td>0.35</td> <td>0.0036 / 3567</td> <td>0.4</td> <td>0.00023 / 230</td> <td>0.45</td> <td>0.00014 / 135</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>Morgan3 (bits)</b></td> <td>0.22</td> <td>0.3</td> <td>0.00068 / 685</td> <td>0.35</td> <td>0.00037 / 372</td> <td>0.35</td> <td>0.00037 / 372</td> <td>0.5</td> <td>2e-05 / 20</td> </tr>
+<td><b>Morgan3 (bits)</b></td> <td>0.22</td> <td>0.3</td> <td>0.00063 / 630</td> <td>0.35</td> <td>0.00034 / 344</td> <td>0.35</td> <td>0.00034 / 344</td> <td>0.5</td> <td>2e-05 / 20</td> </tr>
 <tr>
-<td><b>FeatMorgan0 (counts)</b></td> <td>0.74</td> <td>0.6</td> <td>0.26 / 260585</td> <td>0.65</td> <td>0.17 / 167575</td> <td>0.7</td> <td>0.075 / 74565</td> <td>0.8</td> <td>0.0087 / 8675</td> </tr>
+<td><b>FeatMorgan0 (counts)</b></td> <td>0.74</td> <td>0.6</td> <td>0.25 / 246595</td> <td>0.65</td> <td>0.16 / 157367</td> <td>0.7</td> <td>0.068 / 68140</td> <td>0.8</td> <td>0.0082 / 8195</td> </tr>
 <tr>
-<td><b>FeatMorgan1 (counts)</b></td> <td>0.51</td> <td>0.55</td> <td>0.023 / 23055</td> <td>0.55</td> <td>0.023 / 23055</td> <td>0.6</td> <td>0.003 / 2985</td> <td>0.7</td> <td>0.00013 / 130</td> </tr>
+<td><b>FeatMorgan1 (counts)</b></td> <td>0.51</td> <td>0.55</td> <td>0.021 / 21037</td> <td>0.55</td> <td>0.021 / 21037</td> <td>0.6</td> <td>0.0026 / 2610</td> <td>0.7</td> <td>0.00013 / 130</td> </tr>
 <tr>
-<td><b>FeatMorgan2 (counts)</b></td> <td>0.36</td> <td>0.45</td> <td>0.0048 / 4835</td> <td>0.5</td> <td>0.0003 / 295</td> <td>0.55</td> <td>0.00017 / 167</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>FeatMorgan2 (counts)</b></td> <td>0.36</td> <td>0.45</td> <td>0.004 / 4050</td> <td>0.5</td> <td>0.00027 / 270</td> <td>0.55</td> <td>0.00016 / 155</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>FeatMorgan3 (counts)</b></td> <td>0.28</td> <td>0.35</td> <td>0.0063 / 6264</td> <td>0.4</td> <td>0.0003 / 300</td> <td>0.45</td> <td>0.00017 / 169</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>FeatMorgan3 (counts)</b></td> <td>0.28</td> <td>0.35</td> <td>0.0054 / 5412</td> <td>0.4</td> <td>0.00028 / 280</td> <td>0.45</td> <td>0.00016 / 165</td> <td>0.55</td> <td>3.5e-05 / 35</td> </tr>
 <tr>
-<td><b>FeatMorgan0 (bits)</b></td> <td>0.74</td> <td>0.6</td> <td>0.26 / 260585</td> <td>0.65</td> <td>0.17 / 167575</td> <td>0.7</td> <td>0.075 / 74565</td> <td>0.8</td> <td>0.0087 / 8675</td> </tr>
+<td><b>FeatMorgan0 (bits)</b></td> <td>0.74</td> <td>0.6</td> <td>0.25 / 246595</td> <td>0.65</td> <td>0.16 / 157367</td> <td>0.7</td> <td>0.068 / 68140</td> <td>0.8</td> <td>0.0082 / 8195</td> </tr>
 <tr>
-<td><b>FeatMorgan1 (bits)</b></td> <td>0.51</td> <td>0.55</td> <td>0.026 / 25797</td> <td>0.55</td> <td>0.026 / 25797</td> <td>0.6</td> <td>0.0033 / 3330</td> <td>0.7</td> <td>0.00014 / 140</td> </tr>
+<td><b>FeatMorgan1 (bits)</b></td> <td>0.51</td> <td>0.55</td> <td>0.023 / 23195</td> <td>0.55</td> <td>0.023 / 23195</td> <td>0.6</td> <td>0.003 / 3010</td> <td>0.7</td> <td>0.00014 / 140</td> </tr>
 <tr>
-<td><b>FeatMorgan2 (bits)</b></td> <td>0.38</td> <td>0.45</td> <td>0.0072 / 7217</td> <td>0.5</td> <td>0.00039 / 390</td> <td>0.55</td> <td>0.00022 / 220</td> <td>0.65</td> <td>3e-05 / 30</td> </tr>
+<td><b>FeatMorgan2 (bits)</b></td> <td>0.38</td> <td>0.45</td> <td>0.0065 / 6452</td> <td>0.5</td> <td>0.00036 / 360</td> <td>0.55</td> <td>0.00021 / 205</td> <td>0.65</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>FeatMorgan3 (bits)</b></td> <td>0.30</td> <td>0.4</td> <td>0.00049 / 490</td> <td>0.4</td> <td>0.00049 / 490</td> <td>0.45</td> <td>0.00027 / 270</td> <td>0.55</td> <td>3.5e-05 / 35</td> </tr>
+<td><b>FeatMorgan3 (bits)</b></td> <td>0.30</td> <td>0.4</td> <td>0.00045 / 450</td> <td>0.4</td> <td>0.00045 / 450</td> <td>0.45</td> <td>0.00025 / 250</td> <td>0.55</td> <td>3.5e-05 / 35</td> </tr>
 <tr>
-<td><b>RDKit 4 (bits)</b></td> <td>0.33</td> <td>0.5</td> <td>0.00094 / 945</td> <td>0.55</td> <td>0.00055 / 547</td> <td>0.6</td> <td>0.00015 / 150</td> <td>0.7</td> <td>4e-05 / 40</td> </tr>
+<td><b>RDKit 4 (bits)</b></td> <td>0.33</td> <td>0.5</td> <td>0.0011 / 1120</td> <td>0.55</td> <td>0.00065 / 645</td> <td>0.6</td> <td>0.00017 / 170</td> <td>0.7</td> <td>4e-05 / 40</td> </tr>
 <tr>
-<td><b>RDKit 5 (bits)</b></td> <td>0.29</td> <td>0.5</td> <td>0.00035 / 350</td> <td>0.55</td> <td>0.00021 / 212</td> <td>0.6</td> <td>7.5e-05 / 75</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
+<td><b>RDKit 5 (bits)</b></td> <td>0.29</td> <td>0.5</td> <td>0.0004 / 400</td> <td>0.55</td> <td>0.00025 / 245</td> <td>0.6</td> <td>9e-05 / 90</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>RDKit 6 (bits)</b></td> <td>0.31</td> <td>0.5</td> <td>0.00026 / 260</td> <td>0.55</td> <td>0.00017 / 165</td> <td>0.6</td> <td>7e-05 / 70</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
+<td><b>RDKit 6 (bits)</b></td> <td>0.31</td> <td>0.5</td> <td>0.00027 / 270</td> <td>0.55</td> <td>0.00017 / 170</td> <td>0.6</td> <td>7e-05 / 70</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>RDKit 7 (bits)</b></td> <td>0.43</td> <td>0.5</td> <td>0.00085 / 850</td> <td>0.6</td> <td>9e-05 / 90</td> <td>0.65</td> <td>6e-05 / 60</td> <td>0.75</td> <td>2e-05 / 20</td> </tr>
+<td><b>RDKit 7 (bits)</b></td> <td>0.43</td> <td>0.5</td> <td>0.0011 / 1150</td> <td>0.6</td> <td>9e-05 / 90</td> <td>0.65</td> <td>6e-05 / 60</td> <td>0.75</td> <td>2e-05 / 20</td> </tr>
 <tr>
-<td><b>linear RDKit 4 (bits)</b></td> <td>0.35</td> <td>0.5</td> <td>0.002 / 1970</td> <td>0.55</td> <td>0.0011 / 1115</td> <td>0.6</td> <td>0.00026 / 260</td> <td>0.75</td> <td>3.5e-05 / 35</td> </tr>
+<td><b>linear RDKit 4 (bits)</b></td> <td>0.35</td> <td>0.5</td> <td>0.0023 / 2255</td> <td>0.55</td> <td>0.0013 / 1277</td> <td>0.6</td> <td>0.0003 / 300</td> <td>0.75</td> <td>4e-05 / 40</td> </tr>
 <tr>
-<td><b>linear RDKit 5 (bits)</b></td> <td>0.31</td> <td>0.45</td> <td>0.0032 / 3199</td> <td>0.55</td> <td>0.00035 / 345</td> <td>0.6</td> <td>0.00011 / 110</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
+<td><b>linear RDKit 5 (bits)</b></td> <td>0.31</td> <td>0.45</td> <td>0.0036 / 3590</td> <td>0.55</td> <td>0.0004 / 400</td> <td>0.6</td> <td>0.00013 / 130</td> <td>0.7</td> <td>4e-05 / 40</td> </tr>
 <tr>
-<td><b>linear RDKit 6 (bits)</b></td> <td>0.28</td> <td>0.45</td> <td>0.0013 / 1347</td> <td>0.5</td> <td>0.0003 / 300</td> <td>0.6</td> <td>7e-05 / 70</td> <td>0.7</td> <td>2e-05 / 20</td> </tr>
+<td><b>linear RDKit 6 (bits)</b></td> <td>0.28</td> <td>0.45</td> <td>0.0015 / 1525</td> <td>0.5</td> <td>0.00033 / 330</td> <td>0.6</td> <td>8e-05 / 80</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>linear RDKit 7 (bits)</b></td> <td>0.26</td> <td>0.45</td> <td>0.00068 / 685</td> <td>0.5</td> <td>0.00017 / 170</td> <td>0.55</td> <td>0.00011 / 110</td> <td>0.7</td> <td>2e-05 / 20</td> </tr>
+<td><b>linear RDKit 7 (bits)</b></td> <td>0.26</td> <td>0.45</td> <td>0.00076 / 755</td> <td>0.5</td> <td>0.0002 / 200</td> <td>0.55</td> <td>0.00013 / 130</td> <td>0.7</td> <td>2e-05 / 20</td> </tr>
 <tr>
-<td><b>Atom Pairs (counts)</b></td> <td>0.27</td> <td>0.3</td> <td>0.006 / 5970</td> <td>0.35</td> <td>0.0031 / 3069</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.5</td> <td>3e-05 / 30</td> </tr>
+<td><b>Atom Pairs (counts)</b></td> <td>0.27</td> <td>0.3</td> <td>0.0057 / 5730</td> <td>0.35</td> <td>0.0029 / 2949</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.5</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>Topological Torsions (counts)</b></td> <td>0.19</td> <td>0.3</td> <td>0.0008 / 800</td> <td>0.35</td> <td>0.00046 / 459</td> <td>0.45</td> <td>7.5e-05 / 75</td> <td>0.55</td> <td>2e-05 / 20</td> </tr>
+<td><b>Topological Torsions (counts)</b></td> <td>0.19</td> <td>0.3</td> <td>0.00078 / 780</td> <td>0.35</td> <td>0.00045 / 449</td> <td>0.45</td> <td>8e-05 / 80</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>Atom Pairs (bits)</b></td> <td>0.36</td> <td>0.4</td> <td>0.01 / 10055</td> <td>0.45</td> <td>0.0051 / 5092</td> <td>0.5</td> <td>0.00013 / 130</td> <td>0.55</td> <td>7.5e-05 / 75</td> </tr>
+<td><b>Atom Pairs (bits)</b></td> <td>0.36</td> <td>0.4</td> <td>0.009 / 8960</td> <td>0.45</td> <td>0.0045 / 4545</td> <td>0.5</td> <td>0.00013 / 130</td> <td>0.55</td> <td>7.5e-05 / 75</td> </tr>
 <tr>
-<td><b>Topological Torsions (bits)</b></td> <td>0.22</td> <td>0.35</td> <td>0.00097 / 969</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.45</td> <td>0.00011 / 105</td> <td>0.55</td> <td>3e-05 / 30</td> </tr>
+<td><b>Topological Torsions (bits)</b></td> <td>0.22</td> <td>0.35</td> <td>0.00093 / 934</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.45</td> <td>0.00011 / 105</td> <td>0.55</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>Avalon 512 (bits)</b></td> <td>0.51</td> <td>0.6</td> <td>0.00061 / 615</td> <td>0.65</td> <td>0.00035 / 347</td> <td>0.7</td> <td>8e-05 / 80</td> <td>0.8</td> <td>2e-05 / 20</td> </tr>
+<td><b>Avalon 512 (bits)</b></td> <td>0.51</td> <td>0.6</td> <td>0.00082 / 820</td> <td>0.65</td> <td>0.00046 / 455</td> <td>0.7</td> <td>9e-05 / 90</td> <td>0.8</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>Avalon 1024 (bits)</b></td> <td>0.37</td> <td>0.55</td> <td>0.00074 / 737</td> <td>0.6</td> <td>0.00015 / 150</td> <td>0.65</td> <td>9.5e-05 / 95</td> <td>0.75</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>Avalon 1024 (bits)</b></td> <td>0.37</td> <td>0.55</td> <td>0.00083 / 830</td> <td>0.6</td> <td>0.00017 / 170</td> <td>0.65</td> <td>0.00011 / 105</td> <td>0.75</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>Avalon 512 (counts)</b></td> <td>0.42</td> <td>0.5</td> <td>0.004 / 3975</td> <td>0.55</td> <td>0.0021 / 2122</td> <td>0.65</td> <td>0.00016 / 155</td> <td>0.75</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>Avalon 512 (counts)</b></td> <td>0.42</td> <td>0.5</td> <td>0.0042 / 4180</td> <td>0.55</td> <td>0.0022 / 2215</td> <td>0.65</td> <td>0.00015 / 145</td> <td>0.75</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>Avalon 1024 (counts)</b></td> <td>0.38</td> <td>0.5</td> <td>0.0018 / 1820</td> <td>0.55</td> <td>0.00099 / 992</td> <td>0.6</td> <td>0.00016 / 165</td> <td>0.75</td> <td>2e-05 / 20</td> </tr>
+<td><b>Avalon 1024 (counts)</b></td> <td>0.38</td> <td>0.5</td> <td>0.0019 / 1890</td> <td>0.55</td> <td>0.001 / 1030</td> <td>0.6</td> <td>0.00017 / 170</td> <td>0.75</td> <td>2.5e-05 / 25</td> </tr>
 </table>
+
 The threshold values are rounded to the nearest 0.05.
 
 
