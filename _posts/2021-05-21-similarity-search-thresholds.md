@@ -78,7 +78,6 @@ Here are what the results look like for bit-based MFP2:
 <tr><th>Fingerprint</th> <th>0.95 noise level</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th></tr>
 <tr>
 <td><b>Morgan2 (bits)</b></td> <td>0.27</td> <td>0.35</td> <td>0.0036 / 3567</td> <td>0.4</td> <td>0.00023 / 230</td> <td>0.45</td> <td>0.00014 / 135</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
-<tr>
 </table>
 
 The 0.95 noise level (from the previous analysis) for this FP is 0.27. If I want
