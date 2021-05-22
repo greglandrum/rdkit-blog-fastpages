@@ -82,7 +82,7 @@ Here are what the results look like for bit-based MFP2:
 
 The 0.95 noise level (from the previous analysis) for this FP is 0.27. If I want
 to retrieve 95% of the related compounds I need to set the similarity threshold
-to 0.35. With this threshold I would retrieve ~4000 compounds per million
+to 0.35. With this threshold I would retrieve ~3500 compounds per million
 compounds in the database (0.4% of the database). Similarly, if I were willing
 to live with finding 50% of the related actives I could set the search threshold
 to 0.55, in which case I'd only retrieve ~25 rows per million compounds in the
