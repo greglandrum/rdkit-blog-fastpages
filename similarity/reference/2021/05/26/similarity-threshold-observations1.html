@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Some observations about similarity search thresholds | RDKit blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Some observations about similarity search thresholds" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Fingerprint efficiency" />
+<meta property="og:description" content="Fingerprint efficiency" />
+<link rel="canonical" href="https://greglandrum.github.io/rdkit-blog/similarity/reference/2021/05/26/similarity-threshold-observations1.html" />
+<meta property="og:url" content="https://greglandrum.github.io/rdkit-blog/similarity/reference/2021/05/26/similarity-threshold-observations1.html" />
+<meta property="og:site_name" content="RDKit blog" />
+<meta property="og:image" content="https://greglandrum.github.io/rdkit-blog/images/blog/similarity-search-observations1-img1.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-05-26T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"Fingerprint efficiency","url":"https://greglandrum.github.io/rdkit-blog/similarity/reference/2021/05/26/similarity-threshold-observations1.html","@type":"BlogPosting","headline":"Some observations about similarity search thresholds","dateModified":"2021-05-26T00:00:00-05:00","datePublished":"2021-05-26T00:00:00-05:00","image":"https://greglandrum.github.io/rdkit-blog/images/blog/similarity-search-observations1-img1.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://greglandrum.github.io/rdkit-blog/similarity/reference/2021/05/26/similarity-threshold-observations1.html"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/rdkit-blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://greglandrum.github.io/rdkit-blog/feed.xml" title="RDKit blog" /><!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-113661686-1','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+
+<link rel="shortcut icon" type="image/x-icon" href="/rdkit-blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/rdkit-blog/">RDKit blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/rdkit-blog/about/">About this blog</a><a class="page-link" href="/rdkit-blog/search/">Search</a><a class="page-link" href="/rdkit-blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Some observations about similarity search thresholds</h1><p class="page-description">Fingerprint efficiency</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-05-26T00:00:00-05:00" itemprop="datePublished">
+        May 26, 2021
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      5 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/rdkit-blog/categories/#similarity">similarity</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/rdkit-blog/categories/#reference">reference</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h1"><a href="#tldr">TL;DR</a></li>
+<li class="toc-entry toc-h1"><a href="#intro--results">Intro / Results</a></li>
+</ul><h1 id="tldr">
+<a class="anchor" href="#tldr" aria-hidden="true"><span class="octicon octicon-link"></span></a>TL;DR</h1>
+
+<p>Based on the analysis here it looks like the fingerprint the RDKit provides
+which does the best job of efficiently retrieving chemically similar structures
+is the RDKit fingerprint with <code class="language-plaintext highlighter-rouge">maxPath</code> set to 6.</p>
+
+<h1 id="intro--results">
+<a class="anchor" href="#intro--results" aria-hidden="true"><span class="octicon octicon-link"></span></a>Intro / Results</h1>
+
+<p>I recently did a post presenting an <a href="https://greglandrum.github.io/rdkit-blog/similarity/reference/2021/05/21/similarity-search-thresholds.html">approach for finding reasonable
+thresholds</a>
+for similarity searches using the fingerprints the RDKit provides. This is a
+followup to that one written after I’ve done some more looking at the data. I
+want to come up with a suggestion for which fingerprint to use for similarity
+searches when the goal is retrieving as many chemically related compounds as
+possible. I’ll do that by looking at search efficiency as measured by the
+fraction of the total database retrieved when using similarity thresholds
+sufficient to return 90-95% of the related compounds. See the <a href="https://greglandrum.github.io/rdkit-blog/similarity/reference/2021/05/21/similarity-search-thresholds.html">earlier
+post</a>
+for an explanation of what “related compounds” means here and how the searches
+were done.</p>
+
+<p>As a reminder, this is how I presented the results in that post and how to interpret the data:</p>
+
+<table>
+<tr>
+<th></th> <th></th> <th colspan="2">0.95 of related compounds</th> <th colspan="2">0.9 of related compounds</th> <th colspan="2">0.8 of related compounds</th> <th colspan="2">0.5 of related compounds</th>
+</tr>
+<tr>
+<th>Fingerprint</th> <th>0.95 noise level</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th>
+</tr>
+<tr>
+<td><b>Morgan2 (bits)</b></td> <td>0.27</td> <td>0.35</td> <td>0.0036 / 3567</td> <td>0.4</td> <td>0.00023 / 230</td> <td>0.45</td> <td>0.00014 / 135</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+</table>
+
+<p>The 0.95 noise level (from the previous analysis) for the MFP2 fingerprint is
+0.27. If I want to retrieve 95% of the related compounds I need to set the
+similarity threshold to 0.35. With this threshold I would retrieve ~3600
+compounds per million compounds in the database (0.4% of the database).
+Similarly, if I were willing to live with finding 50% of the related actives I
+could set the search threshold to 0.55, in which case I’d only retrieve ~25 rows
+per million compounds in the database.</p>
+
+<p>I won’t reproduce the full results table from the post here, but here are the
+rows with the highest search efficiencies (lowest number of compounds returned
+from the “background database”) at 90% and 95% of related compounds found. I
+sorted the table by the efficiency at 90% of related compounds retrieved:</p>
+
+<table>
+<tr>
+<th></th> <th></th> <th colspan="2">0.95 of related compounds</th> <th colspan="2">0.9 of related compounds</th> <th colspan="2">0.8 of related compounds</th> <th colspan="2">0.5 of related compounds</th>
+</tr>
+<tr>
+<th>Fingerprint</th> <th>0.95 noise level</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th>
+</tr>
+<tr>
+<td><b>RDKit 7 (bits)</b></td> <td>0.43</td> <td>0.5</td> <td>0.0011 / 1150</td> <td>0.6</td> <td>9e-05 / 90</td> <td>0.65</td> <td>6e-05 / 60</td> <td>0.75</td> <td>2e-05 / 20</td> </tr>
+<tr>
+<td><b>RDKit 6 (bits)</b></td> <td>0.31</td> <td>0.5</td> <td>0.00027 / 270</td> <td>0.55</td> <td>0.00017 / 170</td> <td>0.6</td> <td>7e-05 / 70</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
+<tr>
+<td><b>Avalon 1024 (bits)</b></td> <td>0.37</td> <td>0.55</td> <td>0.00083 / 830</td> <td>0.6</td> <td>0.00017 / 170</td> <td>0.65</td> <td>0.00011 / 105</td> <td>0.75</td> <td>3e-05 / 30</td> </tr>
+<tr>
+<td><b>Topological Torsions (bits)</b></td> <td>0.22</td> <td>0.35</td> <td>0.00093 / 934</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.45</td> <td>0.00011 / 105</td> <td>0.55</td> <td>3e-05 / 30</td> </tr>
+<tr>
+<td><b>Morgan2 (counts)</b></td> <td>0.25</td> <td>0.35</td> <td>0.0018 / 1802</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.45</td> <td>0.00011 / 105</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+<tr>
+<td><b>Morgan2 (bits)</b></td> <td>0.27</td> <td>0.35</td> <td>0.0036 / 3567</td> <td>0.4</td> <td>0.00023 / 230</td> <td>0.45</td> <td>0.00014 / 135</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+<tr>
+<td><b>FeatMorgan2 (counts)</b></td> <td>0.36</td> <td>0.45</td> <td>0.004 / 4050</td> <td>0.5</td> <td>0.00027 / 270</td> <td>0.55</td> <td>0.00016 / 155</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
+<tr>
+<td><b>Morgan3 (counts)</b></td> <td>0.20</td> <td>0.3</td> <td>0.00032 / 320</td> <td>0.3</td> <td>0.00032 / 320</td> <td>0.35</td> <td>0.00018 / 184</td> <td>0.45</td> <td>3.5e-05 / 35</td> </tr>
+<tr>
+<td><b>Morgan3 (bits)</b></td> <td>0.22</td> <td>0.3</td> <td>0.00063 / 630</td> <td>0.35</td> <td>0.00034 / 344</td> <td>0.35</td> <td>0.00034 / 344</td> <td>0.5</td> <td>2e-05 / 20</td> </tr>
+</table>
+<p>The threshold values are rounded to the nearest 0.05.</p>
+
+<p>Based on these numbers (and, of course, the dataset I used) it looks like the
+RDKit fingerprint is the optimal choice for chemical similarity search. Taking
+the efficiency at both 90% and 95% into account, the version of the fingerprint
+with <code class="language-plaintext highlighter-rouge">maxPath=6</code> is arguably better than the version with <code class="language-plaintext highlighter-rouge">maxPath=7</code> (which is
+the default). There’s not a publication for the RDKit fingerprint but it is
+<a href="https://www.rdkit.org/docs/RDKit_Book.html#rdkit-fingerprints">described in detail in the RDKit
+documentation</a>.</p>
+
+<p>The Morgan3 fingerprint, which is what I kind of expected to be the best at this
+task, is quite efficient at 95% retrieval, but falls off relative to the RDKit
+fingerprint at 90% retrieval. Still, it’s certainly not a bad choice. The Morgan
+fingerprints are the RDKit’s implementation of the circular fingerprints
+described in <a href="https://doi.org/10.1021/ci100050t">this publication</a>.</p>
+
+<p>The Avalon fingerprint seems to be another good choice. Not surprising to me,
+but I’ll probably remain resistant to making heavy of it due to the complexity
+of the fingerprint itself. The only non-code description I’m aware of for the
+Avalon FP is in the supplementary material for <a href="https://pubs.acs.org/doi/10.1021/ci050413p">this
+paper</a>; it’s likely that the current
+version of the fingerprint, which was under active development for at least 10
+years after that paper appeared, deviates from that.</p>
+
+<p>Another surprise to me was how well the topological torsions fingerprint does at
+this chemical search. I had (I guess without much evidence) thought of it as
+more of a fuzzy (or “scaffold-hopping”) fingerprint, but the high efficiency on
+this chemical search problem makes me reconsider that. Topological torsions were
+introduced in <a href="https://doi.org/10.1021/ci00054a008">this publication</a>.</p>
+
+<p>Before getting any deeper into details with this kind of analysis, I think I
+would like to look into adding more sets of “related molecules” and probably
+increase the size of the background database just to make sure the statistics
+are solid.</p>
+
+
+  </div><hr />
+<div id="copyright">
+<p class="post-meta">Copyright (C) 2021 Greg Landrum. This work is licensed under a 
+    <a href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a></p>
+</div> 
+<a class="u-url" href="/rdkit-blog/similarity/reference/2021/05/26/similarity-threshold-observations1.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/rdkit-blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/rdkit-blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>RDKit experiments, tips, and tutorials</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/greglandrum" title="greglandrum"><svg class="svg-icon grey"><use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/dr_greg_landrum" title="dr_greg_landrum"><svg class="svg-icon grey"><use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
