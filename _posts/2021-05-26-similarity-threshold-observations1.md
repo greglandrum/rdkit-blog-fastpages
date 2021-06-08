@@ -7,7 +7,7 @@ title: Some observations about similarity search thresholds
 image: images/blog/similarity-search-observations1-img1.png
 ---
 
-**Updated 08.06.2021 after I expanded the set of "related compounds". The source
+**Updated 08.06.2021** after I expanded the set of "related compounds". The source
 of the previous version of the post is available [in
 github.](https://github.com/greglandrum/rdkit-blog/blob/c5eb92294c45e7fe77b6c5658d1de5388090d7f1/_posts/2021-05-26-similarity-threshold-observations1.md) The updates didn't change the discussion that much.
 

@@ -7,7 +7,7 @@ title: Fingerprint similarity thresholds for database searches
 image: images/blog/similarity-search-threshold1-img1.png
 ---
 
-**Updated 08.06.2021 after I expanded the set of "related compounds". The source
+**Updated 08.06.2021** after I expanded the set of "related compounds". The source
 of the previous version of the post is available [in
 github](https://github.com/greglandrum/rdkit-blog/blob/c5eb92294c45e7fe77b6c5658d1de5388090d7f1/_posts/2021-05-21-similarity-search-thresholds.md)
 
