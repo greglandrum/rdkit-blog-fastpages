@@ -115,9 +115,9 @@ window.onload = wrap_img;
 <li class="toc-entry toc-h2"><a href="#the-notebooks">The notebooks</a></li>
 </ul>
 </li>
-</ul><p>**Updated 22.05.2021 after I ran the background retrieval experiments using 5K
-random molecules from the “Related” set instead of the 1K in the original post.
-This doesn’t have a major impact on results.</p>
+</ul><p>**Updated 08.06.2021 after I expanded the set of “related compounds”. The source
+of the previous version of the post is available <a href="https://github.com/greglandrum/rdkit-blog/blob/c5eb92294c45e7fe77b6c5658d1de5388090d7f1/_posts/2021-05-21-similarity-search-thresholds.md">in
+github</a></p>
 
 <h1 id="prologue">
 <a class="anchor" href="#prologue" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prologue</h1>
@@ -174,14 +174,15 @@ decision about what to use for a given search.</p>
 <p>There’s a more complete description below along with links to the jupyter
 notebooks with the actual code, but here’s a quick summary of what I did:</p>
 <ol>
-  <li>I started with 301 groups of related compounds (~20K compounds in all). Each
+  <li>I started with 1047 groups of related compounds (~66K compounds in all). Each
 group is a set of 50-100 compounds from a single ChEMBL document.</li>
-  <li>I calculated intra-group similarities within each of those 301 groups using
+  <li>I calculated intra-group similarities within each of those 1047 groups using
 each of the fingerprint types to determine thresholds for retrieving various
 fractions of each group.</li>
-  <li>I used that same set of 20K compounds to do similarity searches on 100K
-molecules randomly selected from ChEMBL in order to determine what fraction
-of the database would be retrieved for various similarity thresholds.</li>
+  <li>I used a randomly selected subset of 10K of those compounds to do similarity
+searches on 100K molecules randomly selected from ChEMBL in order to
+determine what fraction of the database would be retrieved for various
+similarity thresholds.</li>
 </ol>
 
 <p>Here are what the results look like for bit-based MFP2:</p>
@@ -193,12 +194,12 @@ of the database would be retrieved for various similarity thresholds.</li>
 <th>Fingerprint</th> <th>0.95 noise level</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th>
 </tr>
 <tr>
-<td><b>Morgan2 (bits)</b></td> <td>0.27</td> <td>0.35</td> <td>0.0036 / 3567</td> <td>0.4</td> <td>0.00023 / 230</td> <td>0.45</td> <td>0.00014 / 135</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>Morgan2 (bits)</b></td> <td>0.27</td> <td>0.4</td> <td>0.00019 / 190</td> <td>0.4</td> <td>0.00019 / 190</td> <td>0.45</td> <td>0.00012 / 115</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
 </table>
 
 <p>The 0.95 noise level (from the previous analysis) for this FP is 0.27. If I want
 to retrieve 95% of the related compounds I need to set the similarity threshold
-to 0.35. With this threshold I would retrieve ~3500 compounds per million
+to 0.4. With this threshold I would retrieve ~190 compounds per million
 compounds in the database (0.4% of the database). Similarly, if I were willing
 to live with finding 50% of the related actives I could set the search threshold
 to 0.55, in which case I’d only retrieve ~25 rows per million compounds in the
@@ -208,7 +209,7 @@ database.</p>
 balance between recall (number of interesting compounds retrieved) and the
 overall result set size visible. For example, for the MFP2 results shown above,
 if I’m willing to live with retrieving about 90% of the interesting compounds
-instead of 95% I would only have to look through about 1/20th of the results
+instead of 95% I would only have to look through about 1/8th of the results
 from the database.</p>
 
 <p>With that explained, here’s the full results table:</p>
@@ -220,71 +221,71 @@ from the database.</p>
 <th>Fingerprint</th> <th>0.95 noise level</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th> <th>threshold</th> <th>db fraction / count per million</th>
 </tr>
 <tr>
-<td><b>MACCS</b></td> <td>0.57</td> <td>0.6</td> <td>0.043 / 42650</td> <td>0.65</td> <td>0.023 / 22840</td> <td>0.7</td> <td>0.003 / 3030</td> <td>0.8</td> <td>0.0001 / 100</td> </tr>
+<td><b>MACCS</b></td> <td>0.57</td> <td>0.65</td> <td>0.016 / 15820</td> <td>0.65</td> <td>0.016 / 15820</td> <td>0.7</td> <td>0.0019 / 1880</td> <td>0.8</td> <td>8e-05 / 80</td> </tr>
 <tr>
-<td><b>Morgan0 (counts)</b></td> <td>0.57</td> <td>0.55</td> <td>0.058 / 58467</td> <td>0.6</td> <td>0.014 / 14240</td> <td>0.65</td> <td>0.0076 / 7570</td> <td>0.75</td> <td>0.00047 / 470</td> </tr>
+<td><b>Morgan0 (counts)</b></td> <td>0.57</td> <td>0.6</td> <td>0.017 / 16990</td> <td>0.6</td> <td>0.017 / 16990</td> <td>0.65</td> <td>0.009 / 9040</td> <td>0.75</td> <td>0.00057 / 565</td> </tr>
 <tr>
-<td><b>Morgan1 (counts)</b></td> <td>0.36</td> <td>0.45</td> <td>0.0042 / 4230</td> <td>0.5</td> <td>0.00032 / 320</td> <td>0.55</td> <td>0.00018 / 180</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>Morgan1 (counts)</b></td> <td>0.36</td> <td>0.5</td> <td>0.0003 / 300</td> <td>0.5</td> <td>0.0003 / 300</td> <td>0.55</td> <td>0.00017 / 170</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>Morgan2 (counts)</b></td> <td>0.25</td> <td>0.35</td> <td>0.0018 / 1802</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.45</td> <td>0.00011 / 105</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>Morgan2 (counts)</b></td> <td>0.25</td> <td>0.4</td> <td>0.00014 / 140</td> <td>0.4</td> <td>0.00014 / 140</td> <td>0.45</td> <td>8.5e-05 / 84</td> <td>0.55</td> <td>2e-05 / 20</td> </tr>
 <tr>
-<td><b>Morgan3 (counts)</b></td> <td>0.20</td> <td>0.3</td> <td>0.00032 / 320</td> <td>0.3</td> <td>0.00032 / 320</td> <td>0.35</td> <td>0.00018 / 184</td> <td>0.45</td> <td>3.5e-05 / 35</td> </tr>
+<td><b>Morgan3 (counts)</b></td> <td>0.20</td> <td>0.3</td> <td>0.00026 / 260</td> <td>0.35</td> <td>0.00015 / 154</td> <td>0.35</td> <td>0.00015 / 154</td> <td>0.45</td> <td>3.5e-05 / 35</td> </tr>
 <tr>
-<td><b>Morgan0 (bits)</b></td> <td>0.57</td> <td>0.55</td> <td>0.062 / 61650</td> <td>0.6</td> <td>0.016 / 15515</td> <td>0.65</td> <td>0.0083 / 8250</td> <td>0.75</td> <td>0.00051 / 512</td> </tr>
+<td><b>Morgan0 (bits)</b></td> <td>0.57</td> <td>0.6</td> <td>0.019 / 18550</td> <td>0.6</td> <td>0.019 / 18550</td> <td>0.65</td> <td>0.0099 / 9880</td> <td>0.75</td> <td>0.00063 / 629</td> </tr>
 <tr>
-<td><b>Morgan1 (bits)</b></td> <td>0.37</td> <td>0.45</td> <td>0.0052 / 5217</td> <td>0.5</td> <td>0.00038 / 380</td> <td>0.55</td> <td>0.00021 / 210</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>Morgan1 (bits)</b></td> <td>0.37</td> <td>0.5</td> <td>0.00036 / 360</td> <td>0.5</td> <td>0.00036 / 360</td> <td>0.55</td> <td>0.0002 / 200</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>Morgan2 (bits)</b></td> <td>0.27</td> <td>0.35</td> <td>0.0036 / 3567</td> <td>0.4</td> <td>0.00023 / 230</td> <td>0.45</td> <td>0.00014 / 135</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>Morgan2 (bits)</b></td> <td>0.27</td> <td>0.4</td> <td>0.00019 / 190</td> <td>0.4</td> <td>0.00019 / 190</td> <td>0.45</td> <td>0.00012 / 115</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>Morgan3 (bits)</b></td> <td>0.22</td> <td>0.3</td> <td>0.00063 / 630</td> <td>0.35</td> <td>0.00034 / 344</td> <td>0.35</td> <td>0.00034 / 344</td> <td>0.5</td> <td>2e-05 / 20</td> </tr>
+<td><b>Morgan3 (bits)</b></td> <td>0.22</td> <td>0.3</td> <td>0.00057 / 570</td> <td>0.35</td> <td>0.00031 / 309</td> <td>0.4</td> <td>5e-05 / 50</td> <td>0.5</td> <td>2e-05 / 20</td> </tr>
 <tr>
-<td><b>FeatMorgan0 (counts)</b></td> <td>0.74</td> <td>0.6</td> <td>0.25 / 246595</td> <td>0.65</td> <td>0.16 / 157367</td> <td>0.7</td> <td>0.068 / 68140</td> <td>0.8</td> <td>0.0082 / 8195</td> </tr>
+<td><b>FeatMorgan0 (counts)</b></td> <td>0.74</td> <td>0.65</td> <td>0.17 / 165672</td> <td>0.7</td> <td>0.073 / 72975</td> <td>0.7</td> <td>0.073 / 72975</td> <td>0.8</td> <td>0.0086 / 8620</td> </tr>
 <tr>
-<td><b>FeatMorgan1 (counts)</b></td> <td>0.51</td> <td>0.55</td> <td>0.021 / 21037</td> <td>0.55</td> <td>0.021 / 21037</td> <td>0.6</td> <td>0.0026 / 2610</td> <td>0.7</td> <td>0.00013 / 130</td> </tr>
+<td><b>FeatMorgan1 (counts)</b></td> <td>0.51</td> <td>0.55</td> <td>0.021 / 21000</td> <td>0.6</td> <td>0.0024 / 2360</td> <td>0.65</td> <td>0.0012 / 1235</td> <td>0.7</td> <td>0.00011 / 110</td> </tr>
 <tr>
-<td><b>FeatMorgan2 (counts)</b></td> <td>0.36</td> <td>0.45</td> <td>0.004 / 4050</td> <td>0.5</td> <td>0.00027 / 270</td> <td>0.55</td> <td>0.00016 / 155</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>FeatMorgan2 (counts)</b></td> <td>0.36</td> <td>0.45</td> <td>0.0038 / 3782</td> <td>0.5</td> <td>0.00023 / 230</td> <td>0.55</td> <td>0.00014 / 135</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>FeatMorgan3 (counts)</b></td> <td>0.28</td> <td>0.35</td> <td>0.0054 / 5412</td> <td>0.4</td> <td>0.00028 / 280</td> <td>0.45</td> <td>0.00016 / 165</td> <td>0.55</td> <td>3.5e-05 / 35</td> </tr>
+<td><b>FeatMorgan3 (counts)</b></td> <td>0.28</td> <td>0.4</td> <td>0.00022 / 220</td> <td>0.4</td> <td>0.00022 / 220</td> <td>0.45</td> <td>0.00013 / 130</td> <td>0.55</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>FeatMorgan0 (bits)</b></td> <td>0.74</td> <td>0.6</td> <td>0.25 / 246595</td> <td>0.65</td> <td>0.16 / 157367</td> <td>0.7</td> <td>0.068 / 68140</td> <td>0.8</td> <td>0.0082 / 8195</td> </tr>
+<td><b>FeatMorgan0 (bits)</b></td> <td>0.74</td> <td>0.65</td> <td>0.17 / 165672</td> <td>0.7</td> <td>0.073 / 72975</td> <td>0.7</td> <td>0.073 / 72975</td> <td>0.8</td> <td>0.0086 / 8620</td> </tr>
 <tr>
-<td><b>FeatMorgan1 (bits)</b></td> <td>0.51</td> <td>0.55</td> <td>0.023 / 23195</td> <td>0.55</td> <td>0.023 / 23195</td> <td>0.6</td> <td>0.003 / 3010</td> <td>0.7</td> <td>0.00014 / 140</td> </tr>
+<td><b>FeatMorgan1 (bits)</b></td> <td>0.51</td> <td>0.55</td> <td>0.023 / 22962</td> <td>0.6</td> <td>0.0027 / 2660</td> <td>0.65</td> <td>0.0014 / 1390</td> <td>0.7</td> <td>0.00012 / 120</td> </tr>
 <tr>
-<td><b>FeatMorgan2 (bits)</b></td> <td>0.38</td> <td>0.45</td> <td>0.0065 / 6452</td> <td>0.5</td> <td>0.00036 / 360</td> <td>0.55</td> <td>0.00021 / 205</td> <td>0.65</td> <td>3e-05 / 30</td> </tr>
+<td><b>FeatMorgan2 (bits)</b></td> <td>0.38</td> <td>0.45</td> <td>0.006 / 6007</td> <td>0.5</td> <td>0.00031 / 310</td> <td>0.55</td> <td>0.00018 / 175</td> <td>0.65</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>FeatMorgan3 (bits)</b></td> <td>0.30</td> <td>0.4</td> <td>0.00045 / 450</td> <td>0.4</td> <td>0.00045 / 450</td> <td>0.45</td> <td>0.00025 / 250</td> <td>0.55</td> <td>3.5e-05 / 35</td> </tr>
+<td><b>FeatMorgan3 (bits)</b></td> <td>0.30</td> <td>0.4</td> <td>0.00037 / 370</td> <td>0.45</td> <td>0.00021 / 210</td> <td>0.45</td> <td>0.00021 / 210</td> <td>0.55</td> <td>3.5e-05 / 35</td> </tr>
 <tr>
-<td><b>RDKit 4 (bits)</b></td> <td>0.33</td> <td>0.5</td> <td>0.0011 / 1120</td> <td>0.55</td> <td>0.00065 / 645</td> <td>0.6</td> <td>0.00017 / 170</td> <td>0.7</td> <td>4e-05 / 40</td> </tr>
+<td><b>RDKit 4 (bits)</b></td> <td>0.33</td> <td>0.5</td> <td>0.00069 / 690</td> <td>0.55</td> <td>0.0004 / 400</td> <td>0.6</td> <td>0.00011 / 110</td> <td>0.7</td> <td>4e-05 / 40</td> </tr>
 <tr>
-<td><b>RDKit 5 (bits)</b></td> <td>0.29</td> <td>0.5</td> <td>0.0004 / 400</td> <td>0.55</td> <td>0.00025 / 245</td> <td>0.6</td> <td>9e-05 / 90</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
+<td><b>RDKit 5 (bits)</b></td> <td>0.29</td> <td>0.5</td> <td>0.00025 / 250</td> <td>0.55</td> <td>0.00016 / 155</td> <td>0.6</td> <td>6e-05 / 60</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>RDKit 6 (bits)</b></td> <td>0.31</td> <td>0.5</td> <td>0.00027 / 270</td> <td>0.55</td> <td>0.00017 / 170</td> <td>0.6</td> <td>7e-05 / 70</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
+<td><b>RDKit 6 (bits)</b></td> <td>0.31</td> <td>0.5</td> <td>0.00021 / 210</td> <td>0.55</td> <td>0.00014 / 135</td> <td>0.6</td> <td>6e-05 / 60</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>RDKit 7 (bits)</b></td> <td>0.43</td> <td>0.5</td> <td>0.0011 / 1150</td> <td>0.6</td> <td>9e-05 / 90</td> <td>0.65</td> <td>6e-05 / 60</td> <td>0.75</td> <td>2e-05 / 20</td> </tr>
+<td><b>RDKit 7 (bits)</b></td> <td>0.43</td> <td>0.55</td> <td>0.00051 / 510</td> <td>0.6</td> <td>8e-05 / 80</td> <td>0.6</td> <td>8e-05 / 80</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>linear RDKit 4 (bits)</b></td> <td>0.35</td> <td>0.5</td> <td>0.0023 / 2255</td> <td>0.55</td> <td>0.0013 / 1277</td> <td>0.6</td> <td>0.0003 / 300</td> <td>0.75</td> <td>4e-05 / 40</td> </tr>
+<td><b>linear RDKit 4 (bits)</b></td> <td>0.35</td> <td>0.5</td> <td>0.0015 / 1470</td> <td>0.55</td> <td>0.00083 / 830</td> <td>0.6</td> <td>0.00019 / 190</td> <td>0.7</td> <td>5e-05 / 50</td> </tr>
 <tr>
-<td><b>linear RDKit 5 (bits)</b></td> <td>0.31</td> <td>0.45</td> <td>0.0036 / 3590</td> <td>0.55</td> <td>0.0004 / 400</td> <td>0.6</td> <td>0.00013 / 130</td> <td>0.7</td> <td>4e-05 / 40</td> </tr>
+<td><b>linear RDKit 5 (bits)</b></td> <td>0.31</td> <td>0.5</td> <td>0.00046 / 455</td> <td>0.55</td> <td>0.00027 / 272</td> <td>0.6</td> <td>9e-05 / 90</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>linear RDKit 6 (bits)</b></td> <td>0.28</td> <td>0.45</td> <td>0.0015 / 1525</td> <td>0.5</td> <td>0.00033 / 330</td> <td>0.6</td> <td>8e-05 / 80</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
+<td><b>linear RDKit 6 (bits)</b></td> <td>0.28</td> <td>0.5</td> <td>0.00022 / 220</td> <td>0.5</td> <td>0.00022 / 220</td> <td>0.55</td> <td>0.00014 / 140</td> <td>0.7</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>linear RDKit 7 (bits)</b></td> <td>0.26</td> <td>0.45</td> <td>0.00076 / 755</td> <td>0.5</td> <td>0.0002 / 200</td> <td>0.55</td> <td>0.00013 / 130</td> <td>0.7</td> <td>2e-05 / 20</td> </tr>
+<td><b>linear RDKit 7 (bits)</b></td> <td>0.26</td> <td>0.45</td> <td>0.00053 / 535</td> <td>0.5</td> <td>0.00013 / 130</td> <td>0.55</td> <td>9e-05 / 90</td> <td>0.65</td> <td>3.5e-05 / 35</td> </tr>
 <tr>
-<td><b>Atom Pairs (counts)</b></td> <td>0.27</td> <td>0.3</td> <td>0.0057 / 5730</td> <td>0.35</td> <td>0.0029 / 2949</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.5</td> <td>3e-05 / 30</td> </tr>
+<td><b>Atom Pairs (counts)</b></td> <td>0.27</td> <td>0.35</td> <td>0.0037 / 3724</td> <td>0.35</td> <td>0.0037 / 3724</td> <td>0.4</td> <td>0.00016 / 160</td> <td>0.5</td> <td>3e-05 / 30</td> </tr>
 <tr>
-<td><b>Topological Torsions (counts)</b></td> <td>0.19</td> <td>0.3</td> <td>0.00078 / 780</td> <td>0.35</td> <td>0.00045 / 449</td> <td>0.45</td> <td>8e-05 / 80</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>Topological Torsions (counts)</b></td> <td>0.19</td> <td>0.35</td> <td>0.00049 / 489</td> <td>0.4</td> <td>0.00011 / 110</td> <td>0.45</td> <td>7.5e-05 / 75</td> <td>0.55</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>Atom Pairs (bits)</b></td> <td>0.36</td> <td>0.4</td> <td>0.009 / 8960</td> <td>0.45</td> <td>0.0045 / 4545</td> <td>0.5</td> <td>0.00013 / 130</td> <td>0.55</td> <td>7.5e-05 / 75</td> </tr>
+<td><b>Atom Pairs (bits)</b></td> <td>0.36</td> <td>0.4</td> <td>0.01 / 10380</td> <td>0.45</td> <td>0.0053 / 5250</td> <td>0.5</td> <td>0.00012 / 120</td> <td>0.55</td> <td>7e-05 / 70</td> </tr>
 <tr>
-<td><b>Topological Torsions (bits)</b></td> <td>0.22</td> <td>0.35</td> <td>0.00093 / 934</td> <td>0.4</td> <td>0.00017 / 170</td> <td>0.45</td> <td>0.00011 / 105</td> <td>0.55</td> <td>3e-05 / 30</td> </tr>
+<td><b>Topological Torsions (bits)</b></td> <td>0.22</td> <td>0.4</td> <td>0.00016 / 160</td> <td>0.4</td> <td>0.00016 / 160</td> <td>0.45</td> <td>0.00011 / 105</td> <td>0.55</td> <td>3.5e-05 / 35</td> </tr>
 <tr>
-<td><b>Avalon 512 (bits)</b></td> <td>0.51</td> <td>0.6</td> <td>0.00082 / 820</td> <td>0.65</td> <td>0.00046 / 455</td> <td>0.7</td> <td>9e-05 / 90</td> <td>0.8</td> <td>3e-05 / 30</td> </tr>
+<td><b>Avalon 512 (bits)</b></td> <td>0.51</td> <td>0.65</td> <td>0.0004 / 400</td> <td>0.65</td> <td>0.0004 / 400</td> <td>0.7</td> <td>8e-05 / 80</td> <td>0.8</td> <td>2e-05 / 20</td> </tr>
 <tr>
-<td><b>Avalon 1024 (bits)</b></td> <td>0.37</td> <td>0.55</td> <td>0.00083 / 830</td> <td>0.6</td> <td>0.00017 / 170</td> <td>0.65</td> <td>0.00011 / 105</td> <td>0.75</td> <td>3e-05 / 30</td> </tr>
+<td><b>Avalon 1024 (bits)</b></td> <td>0.37</td> <td>0.55</td> <td>0.00075 / 750</td> <td>0.6</td> <td>0.00014 / 140</td> <td>0.65</td> <td>9e-05 / 90</td> <td>0.75</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>Avalon 512 (counts)</b></td> <td>0.42</td> <td>0.5</td> <td>0.0042 / 4180</td> <td>0.55</td> <td>0.0022 / 2215</td> <td>0.65</td> <td>0.00015 / 145</td> <td>0.75</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>Avalon 512 (counts)</b></td> <td>0.42</td> <td>0.55</td> <td>0.0028 / 2785</td> <td>0.6</td> <td>0.00028 / 280</td> <td>0.65</td> <td>0.00016 / 160</td> <td>0.75</td> <td>2.5e-05 / 25</td> </tr>
 <tr>
-<td><b>Avalon 1024 (counts)</b></td> <td>0.38</td> <td>0.5</td> <td>0.0019 / 1890</td> <td>0.55</td> <td>0.001 / 1030</td> <td>0.6</td> <td>0.00017 / 170</td> <td>0.75</td> <td>2.5e-05 / 25</td> </tr>
+<td><b>Avalon 1024 (counts)</b></td> <td>0.38</td> <td>0.55</td> <td>0.0012 / 1192</td> <td>0.6</td> <td>0.00017 / 170</td> <td>0.6</td> <td>0.00017 / 170</td> <td>0.7</td> <td>4e-05 / 40</td> </tr>
 </table>
 
 <p>The threshold values are rounded to the nearest 0.05.</p>
@@ -333,13 +334,19 @@ assay</a>
 (given the structure of ChEMBL, this implies that the compounds are from the
 same paper). That post includes some pre-filtering of the results to try and get
 only SAR papers by only keeping assays (papers) where 50-100 compounds were
-measured. For this post I re-ran that analysis against ChEMBL28. The analysis
-produced results for 402 groups (a group is the compounds tested in one assay);
-for this analysis I further filtered these down to the 301 groups (20342
-compounds in total) where the number of atoms in the scaffold is at least 50% of
-the average number of atoms for compounds in the group.</p>
+measured. For this post I re-ran that analysis against ChEMBL28 and expanded my
+search criteria to include IC50 data as well as the Ki data used in the original
+set. The analysis produced results for 1396 groups (a group is the compounds
+tested in one assay); for this analysis I further filtered these down to the
+1047 groups (70026 compounds in total) where the number of atoms in the scaffold
+is at least 50% of the average number of atoms for compounds in the group. I
+further filtered each group to only include compounds which have a substructure
+match to the fuzzy MCS which was found for the full set. The hope here is that
+this will limit us to only consider the compounds which are part of the chemical
+series being reported. This lowers the total number of compounds to 66577 across
+the 1047 groups.</p>
 
-<p>So given these 301 groups of chemically related compounds I was ready to start
+<p>So given these 1047 groups of chemically related compounds I was ready to start
 doing some searches.</p>
 
 <h2 id="determining-background-retrieval-rates">
@@ -351,7 +358,7 @@ to use as a background. I wanted a representative sample, so I didn’t apply MW
 filters when doing this selection.</p>
 
 <p>I then queried the background compounds with each molecule in a random subset of
-the 20K members of the “related compounds” set, counted the number of results
+the 66K members of the “related compounds” set, counted the number of results
 each returned for each fingerprint/similarity threshold combination, and did
 statistics based on those results.</p>
 
@@ -376,7 +383,7 @@ the violin plots as a similarity threshold.</p>
 <ul>
   <li>Similarity between random molecules (this is the previous analysis): <a href="https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds.ipynb">https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds.ipynb</a>
 </li>
-  <li>Finding scaffolds for ChEMBL documents (also a previous analysis): <a href="https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Finding%20Scaffolds%20Revisited%20again.ipynb">https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Finding%20Scaffolds%20Revisited%20again.ipynb</a>
+  <li>Finding scaffolds for ChEMBL documents with Ki values (also a previous analysis): <a href="https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Finding%20Scaffolds%20Revisited%20again.ipynb">https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Finding%20Scaffolds%20Revisited%20again.ipynb</a>
 </li>
   <li>Similarity distributions for related compounds: <a href="https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds%20Scaffolds.ipynb">https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds%20Scaffolds.ipynb</a>  Note that this is a new one and I’m still working on cleaning it up and adding more text/explanation</li>
   <li>Fraction of the database retrieved when searching (this one also has the calculation of the summary results presented here): <a href="https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds%20Database%20Fraction.ipynb">https://github.com/greglandrum/rdkit_blog/blob/master/notebooks/Fingerprint%20Thresholds%20Database%20Fraction.ipynb</a> Note that this is a new one and I’m still working on cleaning it up and adding more text/explanation</li>
