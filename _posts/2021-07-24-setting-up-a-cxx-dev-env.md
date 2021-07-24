@@ -161,4 +161,6 @@ read: 10000 mols.
 
 If you don't feel like copy/pasting, the source files for this post are [available from github](https://github.com/greglandrum/rdkit_blog/tree/master/src/simple_cxx_example). 
 
+This all works so nicely because of the time and effort Riccardo Vianello invested a few years ago to improve the RDKit's cmake integration.
+
 Next step: add this to the documentation! 
