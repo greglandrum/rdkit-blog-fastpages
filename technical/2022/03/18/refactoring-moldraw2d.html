@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Some thoughts on refactoring the MolDraw2D code | RDKit blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Some thoughts on refactoring the MolDraw2D code" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A bit of rambling and an overview of some new features" />
+<meta property="og:description" content="A bit of rambling and an overview of some new features" />
+<link rel="canonical" href="https://greglandrum.github.io/rdkit-blog/technical/2022/03/18/refactoring-moldraw2d.html" />
+<meta property="og:url" content="https://greglandrum.github.io/rdkit-blog/technical/2022/03/18/refactoring-moldraw2d.html" />
+<meta property="og:site_name" content="RDKit blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-03-18T00:00:00-05:00" />
+<script type="application/ld+json">
+{"url":"https://greglandrum.github.io/rdkit-blog/technical/2022/03/18/refactoring-moldraw2d.html","@type":"BlogPosting","headline":"Some thoughts on refactoring the MolDraw2D code","dateModified":"2022-03-18T00:00:00-05:00","datePublished":"2022-03-18T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://greglandrum.github.io/rdkit-blog/technical/2022/03/18/refactoring-moldraw2d.html"},"description":"A bit of rambling and an overview of some new features","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/rdkit-blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://greglandrum.github.io/rdkit-blog/feed.xml" title="RDKit blog" /><!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-113661686-1','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+
+<link rel="shortcut icon" type="image/x-icon" href="/rdkit-blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/rdkit-blog/">RDKit blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/rdkit-blog/about/">About this blog</a><a class="page-link" href="/rdkit-blog/search/">Search</a><a class="page-link" href="/rdkit-blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Some thoughts on refactoring the MolDraw2D code</h1><p class="page-description">A bit of rambling and an overview of some new features</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-03-18T00:00:00-05:00" itemprop="datePublished">
+        Mar 18, 2022
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      5 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/rdkit-blog/categories/#technical">technical</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h1"><a href="#why-do-something-like-this">Why do something like this?</a></li>
+<li class="toc-entry toc-h1"><a href="#end-user-visible-changes">End-user visible changes</a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#molecule-rendering">Molecule rendering</a></li>
+<li class="toc-entry toc-h2"><a href="#reaction-rendering">Reaction rendering</a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h1"><a href="#new-features">New features</a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#drawing-molecules-in-grids-using-different-scales">Drawing molecules in grids using different scales</a></li>
+<li class="toc-entry toc-h2"><a href="#the-flexicanvas-fitting-the-canvas-size-to-the-molecule">The “flexicanvas”: fitting the canvas size to the molecule</a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h1"><a href="#control-over-font-size">Control over font size</a></li>
+<li class="toc-entry toc-h1"><a href="#giving-the-legend-a-bit-more-space">Giving the legend a bit more space</a></li>
+<li class="toc-entry toc-h1"><a href="#legends-and-flexicanvas-mode">Legends and flexicanvas mode</a></li>
+</ul><p><em>The functionality described here is available in the 2022.03.1 and later releases of the RDKit</em></p>
+
+<p>I recently merged a pull request (https://github.com/rdkit/rdkit/pull/4948) from Dave Cosgrove with some pretty significant changes (58 modified files and &gt;8000 modified lines of code according to Github) to the backend MolDraw2D code. Dave and I have been working on this (well, ok, Dave has been working, I’ve been commenting on his work ;-) ) for a couple of months.</p>
+
+<p>Given the amount of effort that went into this PR, and how happy I am about it, it may be somewhat surprising to hear that I hope that most of these changes will remain more or less invisible to most of the RDKit community. All existing code and scripts should continue to work without modification, though there may be some small changes (I hope they are improvements) to the way molecules are actually drawn; see below for more information on this.</p>
+
+<h1 id="why-do-something-like-this">
+<a class="anchor" href="#why-do-something-like-this" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why do something like this?</h1>
+
+<p>The MolDraw2D code is heavily used and, in my opinion, pretty important. Over the last few years it had also gotten pretty complex and difficult to maintain. Some of that complexity is inevitable, the rendering code is quite flexible and is solving a non-trivial problem, but a lot of it was also due to the incremental addition of features over time. This “accidental” complexity made both extending and fixing the code more difficult. So at the end of 2021 when Dave had time to do a chunk of work on the RDKit and T5 Informatics had some funds available, we took what we’ve learned over the past years and Dave rewrote the backend. The goal was to clean things up and make the code more extensible and maintainable without breaking existing code.</p>
+
+<h1 id="end-user-visible-changes">
+<a class="anchor" href="#end-user-visible-changes" aria-hidden="true"><span class="octicon octicon-link"></span></a>End-user visible changes</h1>
+
+<h2 id="molecule-rendering">
+<a class="anchor" href="#molecule-rendering" aria-hidden="true"><span class="octicon octicon-link"></span></a>Molecule rendering</h2>
+
+<p>There are some small differences in the way molecules are rendered; these will most likely only be visible if you are really paying attention.</p>
+
+<h2 id="reaction-rendering">
+<a class="anchor" href="#reaction-rendering" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reaction rendering</h2>
+
+<p>Here the changes are a bit larger: the reaction rendering code now makes better use of the available space.</p>
+
+<p>Here’s a rendering of one of the sample reactions we use in the testing code using the 2021.09.4 release of the RDKit:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-0.png" alt=""></p>
+
+<p>Here’s the new version:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-1.png" alt=""></p>
+
+<h1 id="new-features">
+<a class="anchor" href="#new-features" aria-hidden="true"><span class="octicon octicon-link"></span></a>New features</h1>
+
+<h2 id="drawing-molecules-in-grids-using-different-scales">
+<a class="anchor" href="#drawing-molecules-in-grids-using-different-scales" aria-hidden="true"><span class="octicon octicon-link"></span></a>Drawing molecules in grids using different scales</h2>
+
+<p>When drawing molecules in a grid the default behavior is to draw them all at the same scale. Here’s an example of that:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-2.png" alt=""></p>
+
+<p>Since the last molecule is big, the other two molecules end up being drawn really small. We can change that by setting the new drawing option <code class="language-plaintext highlighter-rouge">drawMolsSameScale</code> to True:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-3.png" alt=""></p>
+
+<p>As an aside: if you’re bothered by how big small molecules like ethanol end up being, you can use the <code class="language-plaintext highlighter-rouge">fixedBondLength</code> drawing option (units are, roughly, pixels per angstrom) to set the maximum bond length. Combining this with <code class="language-plaintext highlighter-rouge">drawMolsSameScale=False</code> for the three molecules above results in:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-4.png" alt=""></p>
+
+<h2 id="the-flexicanvas-fitting-the-canvas-size-to-the-molecule">
+<a class="anchor" href="#the-flexicanvas-fitting-the-canvas-size-to-the-molecule" aria-hidden="true"><span class="octicon octicon-link"></span></a>The “flexicanvas”: fitting the canvas size to the molecule</h2>
+
+<p>Aside: I added the initial version of this before Dave did the refactoring, but the new backend simplifies the implementation.</p>
+
+<p>Normally the drawing code scales the molecule and font size to fit the canvas provided for it. With the SVG and Cairo renderers it’s now possible to set the font size and scale and let the drawer figure out how large the canvas needs to be. If I use this feature I get a larger canvas for oxytocin:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-5.png" alt=""></p>
+
+<p>than I do for ezetimibe:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-6.png" alt=""></p>
+
+<p>but the bond lengths and font sizes are the same in each image.</p>
+
+<p>You can use this functionality by creating a MolDraw2D object with width and height set to -1. Here’s the code used to produce the image of ezetimibe above:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ezetimibe</span> <span class="o">=</span> <span class="n">Chem</span><span class="p">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="s">'O=C1[C@H](CC[C@H](O)c2ccc(F)cc2)[C@@H](c2ccc(O)cc2)N1c1ccc(F)cc1'</span><span class="p">)</span>
+<span class="n">d2d</span> <span class="o">=</span> <span class="n">Draw</span><span class="p">.</span><span class="n">MolDraw2DCairo</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">d2d</span><span class="p">.</span><span class="n">drawOptions</span><span class="p">().</span><span class="n">scalingFactor</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># units are roughly pixels/angstrom
+</span><span class="n">d2d</span><span class="p">.</span><span class="n">drawOptions</span><span class="p">().</span><span class="n">fixedFontSize</span> <span class="o">=</span> <span class="mi">14</span>
+<span class="n">d2d</span><span class="p">.</span><span class="n">DrawMolecule</span><span class="p">(</span><span class="n">ezetimibe</span><span class="p">)</span>
+<span class="n">d2d</span><span class="p">.</span><span class="n">FinishDrawing</span><span class="p">()</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">d2d</span><span class="p">.</span><span class="n">GetDrawingText</span><span class="p">())</span>
+</code></pre></div></div>
+
+<h1 id="control-over-font-size">
+<a class="anchor" href="#control-over-font-size" aria-hidden="true"><span class="octicon octicon-link"></span></a>Control over font size</h1>
+
+<p>This is a particularly difficult one because there are just too many odd and conflicting situations which need to be handled. Here are some of the outliers:</p>
+
+<ul>
+  <li>small molecules in large canvases</li>
+  <li>large molecules in small canvases where you expect to be able to read the fonts</li>
+  <li>very large molecules in small canvases there’s no practical way to be able to read the fonts</li>
+</ul>
+
+<p>You have a number of ways to control the font size used when drawing molecules. Let’s start with a small drawing of oxytocin and the default font parameters:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-7.png" alt=""></p>
+
+<p>The relative size of the font and the bond lengths is controlled by the <code class="language-plaintext highlighter-rouge">baseFontSize</code> option, which defaults to 0.6. Increasing it to, for example, 0.8 increases the relative font size, this affects every drawing:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-8.png" alt=""></p>
+
+<p>You can also set a minimum font size in points with the <code class="language-plaintext highlighter-rouge">minFontSize</code> option (not shown here).</p>
+
+<p>Finally, it’s possible to set an exact font size to use with the <code class="language-plaintext highlighter-rouge">fixedFontSize</code> option. Here, again, is oxytocin but with <code class="language-plaintext highlighter-rouge">fixedFontSize=13</code>(obviously this is too large for this canvas size):</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-9.png" alt=""></p>
+
+<h1 id="giving-the-legend-a-bit-more-space">
+<a class="anchor" href="#giving-the-legend-a-bit-more-space" aria-hidden="true"><span class="octicon octicon-link"></span></a>Giving the legend a bit more space</h1>
+
+<p>When you draw a molecule with a legend 10% of the vertical space is set aside for the canvas. This seems to work well for single-line legends:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-10.png" alt=""></p>
+
+<p>But results in a pretty small font if the legend has multiple lines:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-11.png" alt=""></p>
+
+<p>In cases like this we can set <code class="language-plaintext highlighter-rouge">legendFraction</code> to something like 0.15 to give the legend a bit more room:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-12.png" alt=""></p>
+
+<h1 id="legends-and-flexicanvas-mode">
+<a class="anchor" href="#legends-and-flexicanvas-mode" aria-hidden="true"><span class="octicon octicon-link"></span></a>Legends and flexicanvas mode</h1>
+
+<p>When you don’t specify the size of the canvas in advance, the <code class="language-plaintext highlighter-rouge">legendFontSize</code> parameter is directly used to control the size of the legend. For example, here’s a 24 point legend:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-13.png" alt=""></p>
+
+<p>or the same legend but with <code class="language-plaintext highlighter-rouge">legendFontSize=12</code>:</p>
+
+<p><img src="/rdkit-blog/images/blog/refactoring-moldraw2d-14.png" alt=""></p>
+
+  </div><hr />
+<div id="copyright">
+<p class="post-meta">Copyright (C) 2021 Greg Landrum. This work is licensed under a 
+    <a href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a></p>
+</div> 
+<a class="u-url" href="/rdkit-blog/technical/2022/03/18/refactoring-moldraw2d.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/rdkit-blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/rdkit-blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>RDKit experiments, tips, and tutorials</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/greglandrum" target="_blank" title="greglandrum"><svg class="svg-icon grey"><use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/dr_greg_landrum" target="_blank" title="dr_greg_landrum"><svg class="svg-icon grey"><use xlink:href="/rdkit-blog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
