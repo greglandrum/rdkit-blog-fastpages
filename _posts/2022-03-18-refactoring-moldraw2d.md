@@ -8,6 +8,8 @@ title: Some thoughts on refactoring the MolDraw2D code
 
 *The functionality described here is available in the 2022.03.1 and later releases of the RDKit*
 
+# Intro
+
 I recently merged a pull request (https://github.com/rdkit/rdkit/pull/4948) from Dave Cosgrove with some pretty significant changes (58 modified files and >8000 modified lines of code according to Github) to the backend MolDraw2D code. Dave and I have been working on this (well, ok, Dave has been working, I’ve been commenting on his work ;-) ) for a couple of months.
 
 Given the amount of effort that went into this PR, and how happy I am about it, it may be somewhat surprising to hear that I hope that most of these changes will remain more or less invisible to most of the RDKit community. All existing code and scripts should continue to work without modification, though there may be some small changes (I hope they are improvements) to the way molecules are actually drawn; see below for more information on this.
