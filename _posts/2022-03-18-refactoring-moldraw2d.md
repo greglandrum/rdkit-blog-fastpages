@@ -44,7 +44,7 @@ When drawing molecules in a grid the default behavior is to draw them all at the
 
 ![]({{ site.baseurl }}/images/blog/refactoring-moldraw2d-2.png)
 
-Since the last molecule is big, the other two molecules end up being drawn really small. We can change that by setting the new drawing option `drawMolsSameScale` to True:
+Since the last molecule is big, the other two molecules end up being drawn really small. We can change that by setting the new drawing option `drawMolsSameScale` to False:
 
 ![]({{ site.baseurl }}/images/blog/refactoring-moldraw2d-3.png)
 
